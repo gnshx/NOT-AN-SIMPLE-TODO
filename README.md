@@ -152,8 +152,8 @@ Switching between apps, updating spreadsheets, and manually tracking status wast
 ### 1. Clone
 
 ```bash
-git clone https://github.com/chaitanyakumarAI/AI-Internship-Tracker.git
-cd AI-Internship-Tracker
+git clone https://github.com/gnshx/daynightpilot.git
+cd daynightpilot
 ```
 
 ### 2. Install
@@ -289,8 +289,6 @@ NOTION_DATABASE_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 | Route | Page | Description |
 |:---|:---|:---|
 | `/` | Dashboard | Today's tasks, job pipeline, stats, notifications |
-| `/planner` | Day Planner | Time-blocked daily schedule with drag-and-drop |
-| `/tasks` | Task Manager | Full task CRUD with priorities, categories, reminders |
 | `/pipeline` | Job Board | Kanban board by status with drag-and-drop |
 | `/hub` | AI Insights | Gmail intelligence, job opportunities, prep sheets |
 
@@ -335,7 +333,7 @@ Runs automatically in the cloud every 3 hours for free.
 ## Project Structure
 
 ```
-AI-Internship-Tracker/
+daynightpilot/
 ├── main.py                 # Pipeline orchestrator (Gmail → AI → Notion → Telegram)
 ├── scheduler.py            # Recurring 3-hour local scheduler
 ├── gmail_reader.py         # Gmail OAuth2 + email fetching & parsing
@@ -355,8 +353,6 @@ AI-Internship-Tracker/
 ├── web/                    # Next.js 15 dashboard
 │   ├── src/app/
 │   │   ├── page.tsx        # Dashboard (stats, activity, funnel, scanner)
-│   │   ├── planner/page.tsx # Day planner with time blocks
-│   │   ├── tasks/page.tsx  # Task manager with CRUD
 │   │   ├── pipeline/page.tsx # Kanban board (drag-and-drop)
 │   │   ├── hub/page.tsx    # AI Insights / job opportunity radar
 │   │   └── api/            # Next.js API routes (Notion proxy)
@@ -476,6 +472,6 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 If DayNight Pilot helped you land an internship or boosted your productivity, please ⭐ **star the repo** — it helps others find it.
 
-[⭐ Star on GitHub](https://github.com/chaitanyakumarAI/AI-Internship-Tracker) &nbsp;·&nbsp; [🐛 Report a Bug](https://github.com/chaitanyakumarAI/AI-Internship-Tracker/issues) &nbsp;·&nbsp; [💡 Request a Feature](https://github.com/chaitanyakumarAI/AI-Internship-Tracker/issues)
+[⭐ Star on GitHub](https://github.com/gnshx/daynightpilot) &nbsp;·&nbsp; [🐛 Report a Bug](https://github.com/gnshx/daynightpilot/issues) &nbsp;·&nbsp; [💡 Request a Feature](https://github.com/gnshx/daynightpilot/issues)
 
 </div>

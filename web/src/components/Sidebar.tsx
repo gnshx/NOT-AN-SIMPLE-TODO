@@ -43,10 +43,10 @@ export default function Sidebar() {
             </div>
             <div>
               <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.95rem', letterSpacing: '0.06em', color: 'var(--text-primary)', lineHeight: 1 }}>
-                INTERN<span style={{ color: 'var(--accent-green)' }}> PULSE</span>
+                DAYNIGHT<span style={{ color: 'var(--accent-green)' }}> PILOT</span>
               </div>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.48rem', color: 'var(--text-dim)', marginTop: 3, letterSpacing: '0.06em' }}>
-                v2.0 · Smart Tracker
+                v2.0 · Command Center
               </div>
             </div>
           </div>
@@ -54,7 +54,7 @@ export default function Sidebar() {
 
         {/* Nav */}
         <nav style={{ flex: 1, padding: '12px 0', overflowY: 'auto' }}>
-          {NAV.map((item, i) => {
+          {NAV.map((item) => {
             const active = pathname === item.href;
             return (
               <div key={item.href}>

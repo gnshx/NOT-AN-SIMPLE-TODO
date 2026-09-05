@@ -114,7 +114,6 @@ function KanbanCard({ job, colColor, onDragStart }: { job: Job; colColor: string
 export default function PipelinePage() {
   const [jobs, setJobs]       = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
-  const now = new Date().toISOString().split('T')[0].replace(/-/g, '.');
 
   useEffect(() => {
     fetch('/api/jobs').then(r => r.json())

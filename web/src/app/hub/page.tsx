@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -117,11 +118,6 @@ export default function HubPage() {
   const safe    = jobs.filter(j => j.scam_risk === 'Low').length;
   const safeScore = jobs.length > 0 ? Math.round((safe / jobs.length) * 100) : 92;
 
-  const TABS = [
-    { key: 'opps'    as const, label: 'OPPORTUNITIES', count: opps.length,    color: 'var(--accent-green)', icon: Sparkles      },
-    { key: 'threats' as const, label: 'THREAT ALERTS', count: threats.length, color: '#ff5566',             icon: AlertTriangle },
-  ];
-
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-void)' }}>
       <div className="aurora-blob aurora-1" /><div className="aurora-blob aurora-2" /><div className="aurora-blob aurora-3" />
@@ -226,7 +222,7 @@ export default function HubPage() {
             <motion.div initial={{ opacity: 0, x: 14 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.45 }}
               className="glass-card" style={{ borderRadius: 4, padding: '16px 18px' }}>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.52rem', letterSpacing: '0.15em', color: 'var(--text-dim)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ color: 'var(--accent-green)' }}>//</span> SAFETY SCORE
+                <span style={{ color: 'var(--accent-green)' }}>{'//'}</span> SAFETY SCORE
               </div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 3, marginBottom: 8 }}>
                 <span style={{ fontFamily: 'var(--font-display)', fontSize: '3rem', fontWeight: 700, color: 'var(--accent-green)', lineHeight: 1, textShadow: '0 0 24px rgba(0,255,136,0.5)' }}>

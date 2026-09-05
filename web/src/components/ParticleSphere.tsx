@@ -65,7 +65,7 @@ export default function ParticleSphere({
     /* ── Mouse / Drag state ── */
     let isDragging = false;
     let prevMouse  = { x: 0, y: 0 };
-    let velocity   = { x: 0, y: 0 };
+    const velocity   = { x: 0, y: 0 };
     let cursorNDC  = { x: 0, y: 0 }; // normalised device coords relative to canvas
 
     const autoSpeed = 0.0025;
@@ -113,15 +113,10 @@ export default function ParticleSphere({
     renderer.domElement.addEventListener('touchend',   onTouchEnd);
 
     /* ── Animation loop ── */
-    let lastTime = performance.now();
     let animId: number;
 
     const animate = () => {
       animId = requestAnimationFrame(animate);
-      const now   = performance.now();
-      const delta = (now - lastTime) / 1000;
-      lastTime = now;
-
       /* auto-rotate */
       if (!isDragging) {
         points.rotation.y += autoSpeed;

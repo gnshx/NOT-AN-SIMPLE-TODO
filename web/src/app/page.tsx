@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from '@/components/Sidebar';
 import ActivityChart from '@/components/ActivityChart';
-import { RefreshCw, ChevronDown, Shield, Calendar, MapPin } from 'lucide-react';
+import { RefreshCw, ChevronDown, Shield, MapPin } from 'lucide-react';
 
 const ParticleSphere = dynamic(() => import('@/components/ParticleSphere'), { ssr: false });
 
@@ -166,7 +166,7 @@ export default function Dashboard() {
       setJobs(d.jobs ?? []); setIsMock(d.isMock ?? false);
     } catch { setJobs([]); } finally { setLoading(false); }
   };
-  useEffect(() => { fetchJobs(); }, []);
+  useEffect(() => { void Promise.resolve().then(fetchJobs); }, []);
 
   const tracked    = jobs.filter(j => j.status !== 'Job Opportunity');
   const offers     = jobs.filter(j => j.status === 'Offer').length;
@@ -275,7 +275,7 @@ export default function Dashboard() {
             <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.35 }}
               className="glass-card" style={{ borderRadius: 4, overflow: 'hidden' }}>
               <div style={{ padding: '12px 16px 8px', borderBottom: '1px solid var(--border-dim)' }}>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.52rem', letterSpacing: '0.15em', color: 'var(--text-dim)', marginBottom: 4 }}>// JOB SAFETY SCANNER</div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.52rem', letterSpacing: '0.15em', color: 'var(--text-dim)', marginBottom: 4 }}>{'//'} JOB SAFETY SCANNER</div>
                 <div style={{ fontFamily: 'var(--font-display)', fontSize: '0.9rem', fontWeight: 700, letterSpacing: '0.08em', color: 'var(--text-primary)' }}>
                   Safety & New Leads
                 </div>
@@ -305,7 +305,7 @@ export default function Dashboard() {
             {/* Activity chart */}
             <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.45 }}
               className="glass-card" style={{ borderRadius: 4, padding: '14px 16px' }}>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.52rem', letterSpacing: '0.15em', color: 'var(--text-dim)', marginBottom: 12 }}>// ACTIVITY TIMELINE</div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.52rem', letterSpacing: '0.15em', color: 'var(--text-dim)', marginBottom: 12 }}>{'//'} ACTIVITY TIMELINE</div>
               <ActivityChart data={actData.length > 0 ? actData : [
                 { label: 'Jan', value: 3 }, { label: 'Feb', value: 9 }, { label: 'Mar', value: 6 },
                 { label: 'Apr', value: 18 }, { label: 'May', value: 12 }, { label: 'Jun', value: 7 },
@@ -315,7 +315,7 @@ export default function Dashboard() {
             {/* Application funnel */}
             <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.55 }}
               className="glass-card" style={{ borderRadius: 4, padding: '14px 16px' }}>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.52rem', letterSpacing: '0.15em', color: 'var(--text-dim)', marginBottom: 12 }}>// FUNNEL</div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.52rem', letterSpacing: '0.15em', color: 'var(--text-dim)', marginBottom: 12 }}>{'//'} FUNNEL</div>
               {[
                 { stage: 'Applied',   col: 'var(--text-muted)',     n: jobs.filter(j=>j.status==='Applied').length },
                 { stage: 'Reviewing', col: 'var(--accent-purple)',  n: jobs.filter(j=>j.status==='Under Review').length },
