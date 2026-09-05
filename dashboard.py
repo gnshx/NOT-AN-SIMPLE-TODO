@@ -1,5 +1,5 @@
 """
-dashboard.py — CLI dashboard for AI Internship Tracker.
+dashboard.py — CLI dashboard for Pulse.
 
 Queries your Notion database and displays:
   - Status summary (applied / interviews / offers / rejections)
@@ -309,7 +309,7 @@ def print_json_output(apps: list[dict]) -> None:
 # ── Entry point ───────────────────────────────────────────────────────────────
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="AI Internship Tracker Dashboard")
+    parser = argparse.ArgumentParser(description="Pulse Dashboard")
     parser.add_argument("--compact", action="store_true", help="One-line summary")
     parser.add_argument("--json",    action="store_true", help="JSON output")
     args = parser.parse_args()

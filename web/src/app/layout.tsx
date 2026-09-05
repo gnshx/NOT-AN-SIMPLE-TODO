@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Intern Pulse | Internship Tracker',
+  title: 'Pulse | Internship Tracker',
   description: 'Track all your internship applications in one place. Get AI-powered safety alerts, interview prep tips, and real-time status updates.',
 };
 

@@ -1,4 +1,4 @@
-# Intern Pulse (Web Dashboard) 🌌
+# Pulse (Web Dashboard) 🌌
 
 A premium, glassmorphic Next.js web application designed to visualize and manage your job and internship application pipeline. Powered by Google Gemini and Notion integrations, it provides automated tracking, scam detection, and prep sheets.
 

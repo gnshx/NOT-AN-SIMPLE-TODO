@@ -1,12 +1,10 @@
 <div align="center">
 
-# ⚡ InternPulse
+# ⚡ Pulse
 
-### An autonomous AI-powered internship tracking system
+### Autonomous AI-Powered Application Tracking
 
-*Reads your Gmail → Classifies with Gemini AI → Detects scam companies → Updates Notion → Alerts you on Telegram — all automatically, every 3 hours.*
-
-<br/>
+**Reads Gmail → Classifies with Gemini AI → Detects scam companies → Syncs Notion → Alerts Telegram — fully automated every 3 hours, zero servers, zero cost.**
 
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![Gemini AI](https://img.shields.io/badge/Gemini_AI-2.5_Flash-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://deepmind.google/technologies/gemini/)
@@ -20,386 +18,387 @@
 
 ---
 
-## 📖 What is InternPulse?
+## TL;DR
 
-Applying to internships means drowning in emails — confirmations, rejections, OAs, interview invites — across 10 different portals. **InternPulse automates all of that.**
+Pulse is a **fully autonomous application tracking system**. It monitors your Gmail inbox, uses Google Gemini AI to classify every job-related email, runs scam-detection research on new companies, upserts results into a Notion database, and pushes rich alerts to Telegram — all on a **3-hour schedule via GitHub Actions**. A cinematic Next.js dashboard provides real-time pipeline visualization.
 
-It silently monitors your Gmail inbox, uses Google Gemini AI to understand each email, and:
-- Logs the application to your **Notion database**
-- Sends you a **Telegram alert** with company scam analysis and interview prep tips
-- Picks out the best **job opportunities** from digest emails (Internshala, LinkedIn, Unstop)
-- Runs **automatically every 3 hours** via GitHub Actions — no server, no cost
+No server. No cron daemon. No manual work after setup.
 
 ---
 
-## ✨ Features
+## The Problem
 
-| Feature | Details |
+Applying to jobs and internships generates a flood of email across dozens of portals — confirmations, OAs, interview invites, rejections, ghosted applications. Manually tracking status in a spreadsheet is error-prone and reactive. By the time you update your tracker, you've already missed interview prep time.
+
+**Pulse solves this by making your inbox the source of truth.** Every relevant email is read, understood, and acted upon automatically.
+
+---
+
+## Key Features
+
+| Feature | Detail |
 |:---|:---|
-| 🧠 **Gemini AI Classification** | Understands the intent of every email — Applied, Rejected, OA, Interview, Offer |
-| 🔡 **Keyword Fallback** | Zero downtime if Gemini is rate-limited — a robust keyword classifier takes over |
-| 🕵️ **Scam Company Detection** | Web-searches every new company and uses AI to flag High/Medium/Low scam risk |
-| 🎯 **Interview Prep Sheets** | Auto-generates tech stack, recent news & likely interview questions the moment you get an interview |
-| 💼 **Job Opportunity Digests** | Extracts the best AI/ML/Data roles from digest emails and sends instant Telegram alerts |
-| 📊 **Notion Dashboard** | Auto-creates rows, avoids duplicates, updates status as your application progresses |
-| 🔔 **Rich Telegram Alerts** | Beautifully formatted messages with emoji, company name, role, risk score, and prep tips |
-| 🌐 **Next.js Web Dashboard** | A cinematic dark-mode UI with Kanban board, funnel chart, activity timeline, and safety scanner |
-| ⏱️ **Fully Automated** | GitHub Actions runs the pipeline every 3 hours — no manual work after setup |
+| **AI Email Classification** | Gemini 2.5 Flash extracts company, role, status, platform, OA links, and confidence scores from unstructured email. Keyword fallback ensures zero downtime. |
+| **Scam Risk Detection** | Web-searches every new company via DuckDuckGo + Gemini analysis. Flags High / Medium / Low risk with explainable notes. Includes a heuristic blocklist for known predatory platforms. |
+| **Interview Prep Sheets** | When an interview is scheduled, automatically generates tech stack, recent company news, and likely interview questions. |
+| **Job Opportunity Radar** | Extracts best-fit roles from digest emails (LinkedIn, Internshala, Unstop) and sends instant Telegram alerts. |
+| **Notion Sync** | Auto-creates and upserts rows with deduplication (email-ID + Company+Role merge). Avoids duplicates across re-runs. |
+| **Rich Telegram Alerts** | HTML-formatted messages with emoji, company, role, risk score, prep sheet, and OA links. |
+| **Next.js Dashboard** | Cinematic dark-mode UI with Kanban board, funnel chart, activity timeline, safety scanner, and real-time stats. |
+| **Multi-Key Rate-Limit Resilience** | Rotates across multiple Gemini API keys automatically. Sleeps respect 15 req/min limits. |
+| **Fully Cloud Automated** | GitHub Actions runs the pipeline every 3 hours — no local machine, no VPS, no cost. |
+| **Local Scheduler** | `python scheduler.py` for local/offline runs with the same pipeline. |
 
 ---
 
-## 🏗️ How It Works
+## Architecture
 
 ```
-Your Gmail Inbox
-       │
-       ▼
-  gmail_reader.py        ← OAuth2 fetch of latest emails
-       │
-       ▼
-  utils.py               ← Pre-filters non-job emails (saves AI quota)
-       │
-       ▼
-  status_classifier.py   ← Gemini 2.5 Flash → Keyword fallback
-       │
-       ├──→ company_researcher.py  ← DuckDuckGo + Gemini scam analysis
-       │
-       ▼
-  notion_updater.py      ← Create/update row in Notion (deduplication built-in)
-       │
-       ▼
-  telegram_notifier.py   ← Rich HTML alert to your Telegram
-       │
-       ▼
-  email_history.py       ← Mark email as processed (prevents re-processing)
+┌─────────────────────────────────────────────────────────────────┐
+│                        Pulse Pipeline                           │
+├──────────────┬──────────────┬──────────────┬───────────────────┤
+│  Gmail Inbox │  Gemini AI   │  Web Research│  Notion Database  │
+│  (OAuth2)    │  (2.5 Flash) │  (DuckDuckGo)│  (Upsert + Dedup) │
+│   ▼          │   ▼          │   ▼          │   ▼               │
+│ gmail_reader │ status_      │ company_     │ notion_updater    │
+│              │ classifier   │ researcher   │                   │
+└──────┬───────┴──────┬──────┴──────┬──────┴────────┬──────────┘
+       │              │             │               │
+       └──────────────┴─────────────┴───────────────┘
+                          ▼
+                 telegram_notifier (HTML alerts)
+                          ▼
+                 email_history (processed cache)
+                          ▼
+              ┌─────────────────────────┐
+              │  GitHub Actions / Local │
+              │  Scheduler (3 hours)    │
+              └─────────────────────────┘
+                          ▼
+              ┌─────────────────────────┐
+              │  Next.js Dashboard      │
+              │  (Kanban, Funnel, Chart)│
+              └─────────────────────────┘
 ```
 
----
+### Data Flow
 
-## 🚀 Setup Guide
-
-> Follow these steps carefully. The whole setup takes about 15 minutes.
-
-### Step 1 — Prerequisites
-
-Make sure you have:
-- **Python 3.12+** → [Download](https://python.org/downloads)
-- **Git** → [Download](https://git-scm.com)
-- A **Google Account** (the Gmail you want to monitor)
-- A **Notion account** → [notion.so](https://notion.so)
-- A **Telegram account**
+1. **Ingest** — `gmail_reader.py` fetches latest inbox messages via Gmail API v1 (OAuth2).
+2. **Pre-filter** — `utils.py` discards non-job emails using regex heuristics (saves AI quota).
+3. **Classify** — `status_classifier.py` sends email text to Gemini 2.5 Flash with a structured system prompt. Falls back to a 50+ keyword rule-based classifier if the API is rate-limited.
+4. **Research** — `company_researcher.py` runs DuckDuckGo searches for scam signals and (if interview) tech-stack / interview questions. Gemini synthesizes results into structured JSON.
+5. **Persist** — `notion_updater.py` upserts into Notion with deduplication via embedded email IDs and Company+Role matching.
+6. **Notify** — `telegram_notifier.py` sends formatted HTML alerts for new applications, status changes, and hot job opportunities.
+7. **Mark Done** — `email_history.py` persists processed Gmail IDs to `data/processed_emails.json` to prevent re-processing.
 
 ---
 
-### Step 2 — Clone & Install
+## Quick Start
+
+### Prerequisites
+
+- **Python 3.12+**
+- **Git**
+- **Google Account** (Gmail to monitor)
+- **Notion account** ([notion.so](https://notion.so))
+- **Telegram account**
+
+### 1. Clone
 
 ```bash
 git clone https://github.com/chaitanyakumarAI/AI-Internship-Tracker.git
 cd AI-Internship-Tracker
+```
 
-# Create virtual environment
+### 2. Install
+
+```bash
 python -m venv .venv
-
-# Activate it:
-# Windows:
-.venv\Scripts\activate
-# macOS / Linux:
-source .venv/bin/activate
-
-# Install dependencies
+source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
----
+### 3. API Keys
 
-### Step 3 — Get Your API Keys
+| Service | How |
+|:---|:---|
+| **Gemini AI** (free) | [aistudio.google.com](https://aistudio.google.com) → Get API Key |
+| **Notion** | [notion.so/my-integrations](https://www.notion.so/my-integrations) → New Integration → copy token |
+| **Telegram Bot** | @BotFather → `/newbot` → copy token. Chat ID from @userinfobot |
+| **Gmail OAuth** | Google Cloud Console → enable Gmail API → OAuth Desktop Client → download `credentials.json` |
 
-#### 🔵 Google Gemini (Free)
-1. Go to [aistudio.google.com](https://aistudio.google.com)
-2. Click **Get API Key** → **Create API Key**
-3. Copy the key — it looks like `AIzaSy...`
-
-#### 🟣 Notion
-1. Go to [notion.so/my-integrations](https://www.notion.so/my-integrations)
-2. Click **New Integration** → give it a name (e.g., `InternPulse`) → **Submit**
-3. Copy the **Internal Integration Token** (starts with `secret_...`)
-
-#### 🔵 Telegram Bot
-1. Open Telegram and search for **@BotFather**
-2. Send `/newbot` and follow the prompts to create a bot
-3. Copy the **Bot Token** (looks like `123456789:AAxxxxxx`)
-4. To get your **Chat ID**: search for **@userinfobot** on Telegram and send it `/start`. It will reply with your Chat ID.
-
-#### 🟠 Gmail OAuth
-1. Go to [console.cloud.google.com](https://console.cloud.google.com)
-2. Create a new project (e.g., `InternPulse`)
-3. Go to **APIs & Services** → **Enable APIs** → search and enable **Gmail API**
-4. Go to **APIs & Services** → **OAuth consent screen**:
-   - User type: **External** → Fill in app name → Save
-   - Go to **Audience** → click **Publish App** *(prevents 7-day token expiry)*
-5. Go to **APIs & Services** → **Clients** → **Create OAuth Client ID**:
-   - Application type: **Desktop App** → Create
-   - Click **Download JSON** → rename it to `credentials.json` → place it in the project root
-
----
-
-### Step 4 — Configure Environment
-
-Copy the example file and fill in your keys:
+### 4. Environment
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env`:
-
 ```env
-# Notion
 NOTION_API_KEY=secret_xxxxxxxxxxxxxxxxxxxx
 NOTION_DATABASE_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-# Google Gemini
 GEMINI_API_KEY=AIzaSy...
-
-# Telegram
 TELEGRAM_BOT_TOKEN=123456789:AAxxxxxx
 TELEGRAM_CHAT_ID=123456789
 ```
 
----
-
-### Step 5 — Set Up Notion Database
-
-Run the automated setup script which creates the database for you:
+### 5. Notion Database
 
 ```bash
 python setup_notion_db.py
 ```
 
-> **Don't forget:** After the script runs, open Notion, find your new database, click the **•••** menu → **Connect to** → select your integration.
+Then open Notion → your new database → **•••** → **Connect to** → select your integration.
 
-**Or create it manually** with these exact property names:
+**Or create manually** with these properties:
 
 | Property | Type | Notes |
-|---|---|---|
-| Company | **Title** | Primary field |
+|:---|:---|:---|
+| Company | Title | Primary field |
 | Role | Text | |
 | Status | Select | Applied, Under Review, OA Sent, Interview Scheduled, Rejected, Offer, Ghosted |
-| Email ID | Text | Used to detect duplicates |
+| Email ID | Text | Deduplication key |
 | Sender | Text | |
 | Subject | Text | |
 | Date Received | Date | |
 | OA Link | URL | |
-| Notes | Text | AI reasoning |
+| Notes | Text | AI reasoning + `[eid:xxxx]` prefix |
 | Last Updated | Date | |
 | Scam Risk | Select | High, Medium, Low |
 | Risk Notes | Text | AI scam analysis |
 | Prep Sheet | Text | Interview prep content |
 
----
-
-### Step 6 — First Run (Gmail Auth)
+### 6. First Run (Gmail Auth)
 
 ```bash
 python main.py
 ```
 
-On the **first run only**, a browser window will open asking you to sign in to Google and grant Gmail read access. After you approve, a `token.json` file is saved automatically — you won't be asked again.
+First run opens a browser for Google OAuth consent. After approval, `token.json` is cached automatically.
 
----
-
-### Step 7 — Verify Everything Works
+### 7. Verify
 
 ```bash
 python test_setup.py
 ```
 
-You should see all tests passing. If any fail, the error message will tell you exactly what's wrong.
-
 ---
 
-### Step 8 — Run on a Schedule (Local)
+## Usage
+
+### Local Scheduler
 
 ```bash
-# Runs every 3 hours indefinitely
+# Run every 3 hours indefinitely
 python scheduler.py
 
-# Or a one-time run
+# One-shot run
 python scheduler.py --once
 ```
 
----
+### CLI Dashboard
 
-## ⚙️ GitHub Actions (Fully Cloud Automated — Recommended)
+```bash
+python dashboard.py            # Full dashboard
+python dashboard.py --compact  # One-line summary
+python dashboard.py --json     # JSON output
+```
 
-This is the best way to run InternPulse — it runs automatically in the cloud every 3 hours for free.
-
-### Setup
-
-1. Fork or push this repo to your GitHub account
-2. Go to your repo → **Settings** → **Secrets and variables** → **Actions**
-3. Click **New repository secret** and add each of these:
-
-| Secret Name | Where to get it |
-|---|---|
-| `NOTION_API_KEY` | Your Notion integration token |
-| `NOTION_DATABASE_ID` | The ID from your Notion database URL |
-| `GEMINI_API_KEY` | From Google AI Studio |
-| `TELEGRAM_BOT_TOKEN` | From @BotFather on Telegram |
-| `TELEGRAM_CHAT_ID` | From @userinfobot on Telegram |
-| `GMAIL_CREDENTIALS_JSON` | Paste the **entire contents** of `credentials.json` |
-| `GMAIL_TOKEN_JSON` | Paste the **entire contents** of `token.json` (generated in Step 6) |
-
-4. Done! The workflow in `.github/workflows/tracker.yml` runs automatically every 3 hours.
-
-> **To trigger it manually:** Go to your repo → **Actions** tab → **AI Internship Tracker** → **Run workflow**
+Output includes:
+- Key metrics (total, active, interviews, offers, rejections, ghosted)
+- Status breakdown with visual bars
+- Platform breakdown (LinkedIn, Email, Internshala, etc.)
+- Top companies
+- Recent activity (last 5)
+- Pipeline health warnings (high ghost rate, >50% rejections)
 
 ---
 
-## 🌐 Web Dashboard
+## Web Dashboard
 
-A cinematic dark-mode dashboard is included in the `/web` folder.
+A cinematic dark-mode Next.js 15 dashboard lives in `/web`.
 
 ```bash
 cd web
 npm install
 npm run dev
-# Open http://localhost:3000
+# → http://localhost:3000
 ```
 
-**Set the Notion credentials for the dashboard:**
+Create `web/.env.local` for Notion credentials:
 
-Create `web/.env.local`:
 ```env
 NOTION_API_KEY=secret_xxxxxxxxxxxxxxxxxxxx
 NOTION_DATABASE_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
-### Dashboard Pages
+### Pages
 
-| Page | Route | Description |
-|---|---|---|
-| Dashboard | `/` | Application list, stats, safety scanner, activity chart |
-| Job Board | `/pipeline` | Kanban board by status |
-| AI Insights | `/hub` | Job opportunity alerts & tips |
+| Route | Page | Description |
+|:---|:---|:---|
+| `/` | Dashboard | Application list, stats, safety scanner, activity chart, funnel |
+| `/pipeline` | Job Board | Kanban board by status with drag-and-drop |
+| `/hub` | AI Insights | Job opportunity alerts & tips |
+
+### Dashboard Features
+
+- **Real-time stats** — Active applications, interviews, offers, response rate
+- **Safety Scanner** — 3D particle visualization + scam risk flags + trust score
+- **Kanban Board** — Drag-and-drop status updates synced to Notion
+- **Activity Timeline** — Monthly application volume chart
+- **Funnel View** — Applied → Reviewing → OA → Interview → Offer pipeline
+- **Filter Pills** — Quick-filter by status with animated counters
 
 ---
 
-## 📁 Project Structure
+## CI/CD — GitHub Actions (Recommended)
+
+Runs automatically in the cloud every 3 hours for free.
+
+### Setup
+
+1. Fork / push to GitHub
+2. Repo → **Settings** → **Secrets and variables** → **Actions**
+3. Add these secrets:
+
+| Secret | Source |
+|:---|:---|
+| `NOTION_API_KEY` | Notion integration token |
+| `NOTION_DATABASE_ID` | From Notion DB URL |
+| `GEMINI_API_KEY` | Google AI Studio |
+| `TELEGRAM_BOT_TOKEN` | @BotFather |
+| `TELEGRAM_CHAT_ID` | @userinfobot |
+| `GMAIL_CREDENTIALS_JSON` | Full contents of `credentials.json` |
+| `GMAIL_TOKEN_JSON` | Full contents of `token.json` (from first run) |
+
+4. Done. The workflow in `.github/workflows/tracker.yml` runs every 3 hours.
+
+**Manual trigger:** Actions tab → **Pulse** → **Run workflow**
+
+---
+
+## Project Structure
 
 ```
 AI-Internship-Tracker/
+├── main.py                 # Pipeline orchestrator (entry point)
+├── scheduler.py            # Recurring 3-hour local scheduler
+├── gmail_reader.py         # Gmail OAuth2 + email fetching & parsing
+├── status_classifier.py    # Gemini AI + keyword fallback + multi-key rotation
+├── company_researcher.py   # DuckDuckGo + Gemini scam analysis + interview prep
+├── notion_updater.py       # Notion DB upsert with deduplication
+├── telegram_notifier.py    # Rich HTML Telegram message builder & sender
+├── email_history.py        # Processed email cache (prevents re-processing)
+├── dashboard.py            # CLI dashboard (full / compact / JSON)
+├── config.py               # Env vars, logging, constants, validation
+├── utils.py                # Retry, HTML parsing, hashing, truncation
 │
-├── 🐍 Python Backend
-│   ├── main.py                 # Pipeline orchestrator (entry point)
-│   ├── scheduler.py            # Recurring 3-hour local scheduler
-│   ├── gmail_reader.py         # Gmail OAuth2 + email fetching & parsing
-│   ├── status_classifier.py    # Gemini AI + keyword fallback classifier
-│   ├── company_researcher.py   # AI scam detection & interview prep generator
-│   ├── notion_updater.py       # Notion database upsert with deduplication
-│   ├── telegram_notifier.py    # Rich HTML Telegram message builder & sender
-│   ├── email_history.py        # Processed email cache (prevents duplicates)
-│   ├── dashboard.py            # Fetches Notion rows for the web UI API
-│   ├── config.py               # All env vars, logging setup, constants
-│   └── utils.py                # Shared helpers: retry, HTML parser, hashing
+├── setup_notion_db.py      # Auto-creates Notion database schema
+├── test_setup.py           # Smoke test for environment setup
+├── test_integration.py     # Full integration test suite
 │
-├── 🛠️ Utilities
-│   ├── setup_notion_db.py      # Auto-creates Notion database schema
-│   ├── reprocess.py            # Wipes cache & reprocesses last 100 emails
-│   ├── test_setup.py           # Smoke test for your environment setup
-│   └── test_integration.py     # Full integration test suite (31 tests)
+├── web/                    # Next.js 15 dashboard
+│   ├── src/app/
+│   │   ├── page.tsx        # Dashboard (stats, activity, funnel, scanner)
+│   │   ├── pipeline/page.tsx # Kanban board (drag-and-drop)
+│   │   ├── hub/page.tsx    # AI Insights / job opportunity radar
+│   │   └── api/            # Next.js API routes (Notion proxy)
+│   ├── src/components/     # Sidebar, JobCard, StatCard, ActivityChart, ParticleSphere
+│   └── package.json
 │
-├── 🌐 Web Dashboard (Next.js 15)
-│   └── web/
-│       ├── src/app/            # Pages: Dashboard, Pipeline (Kanban), Hub
-│       ├── src/components/     # Sidebar, Charts, ParticleSphere, JobCard
-│       └── package.json
+├── .github/workflows/
+│   └── tracker.yml          # GitHub Actions (every 3 hours)
 │
-├── ⚙️ Automation
-│   └── .github/workflows/tracker.yml   # GitHub Actions (runs every 3 hrs)
+├── data/
+│   └── processed_emails.json # Dedup cache
 │
-├── .env.example                # Template — copy to .env and fill in keys
-├── credentials.json            # Gmail OAuth client (never commit!)
-├── token.json                  # Gmail token cache (never commit!)
+├── logs/
+│   └── tracker.log           # Structured JSON logs
+│
 ├── requirements.txt
+├── .env.example
+├── .gitignore
 └── LICENSE
 ```
 
 ---
 
-## 📬 Telegram Notification Examples
+## Engineering Highlights
 
-**New Application Tracked:**
-```
-🆕 New application tracked
+### Resilience
 
-📝 Status: Applied
-🏢 Company: Google
-💼 Role: STEP Intern (Software)
-📧 Subject: Thank you for applying — Google Internship
-📅 Time: 2026-05-23 06:00 UTC
+- **Multi-key Gemini rotation** — rotates across comma-separated API keys on 429 / quota errors.
+- **Keyword fallback classifier** — 50+ regex patterns for rejection, offer, interview, OA, applied, under-review detection. Activate when Gemini is unavailable.
+- **Retry with exponential backoff** — decorator-based retry on all I/O (Gmail, Notion, Telegram, web search).
+- **Graceful degradation** — if Notion is unconfigured, classification still runs and logs to stdout.
 
-✅ Risk Assessment: Low
-Google is a globally recognized company with verified presence.
-```
+### Correctness
 
-**Interview Scheduled + Prep Sheet:**
-```
-🆕 New application tracked
+- **Deduplication at two levels** — exact email-ID match in Notes, then Company+Role fuzzy match.
+- **Validation layer** — Unknown company / role / status blocks Notion insertion.
+- **Confidence scoring** — Gemini returns 0-100 confidence; <70 auto-flags "Needs Review".
+- **Structured logging** — JSON-line logs to `logs/tracker.log` with timestamps, levels, and module names.
 
-🎯 Status: Interview Scheduled
-🏢 Company: Bluestock Fintech
-💼 Role: Data Analyst Intern
-📅 Time: 2026-05-21 17:35 UTC
+### Security
 
-✅ Risk Assessment: Low
-Established fintech firm with active LinkedIn and Glassdoor reviews.
+- **OAuth2 only** — never stores Gmail password; token cached in `token.json` (gitignored).
+- **Secrets via env** — all API keys in `.env` or GitHub Secrets; never hardcoded.
+- **Read-only Gmail scope** — `https://www.googleapis.com/auth/gmail.readonly`.
+- **No external data exfil** — company research sends only search queries, not email content.
 
-🧠 Interview Prep Sheet:
-• Tech Stack: Python, SQL, Power BI, Excel
-• Likely Questions: SQL aggregation, data cleaning, case studies
-• Recent News: Expanding analytics team in 2026
-```
+---
 
-**Hot Job Opportunity:**
-```
-🔥 Hot Job Recommendation Found!
+## Testing
 
-💼 Status: Job Opportunity
-🏢 Company: Amazon
-💼 Role: ML Engineer Intern
-🔗 Job Link: https://amazon.jobs/...
+```bash
+# Environment smoke test
+python test_setup.py
+
+# Full integration test suite
+python test_integration.py
+
+# Reprocess last 100 emails (wipe cache first)
+python reprocess.py
 ```
 
 ---
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 | Problem | Solution |
-|---|---|
-| **Browser doesn't open on first run** | Run `python main.py` from a terminal that can open a browser window (not SSH) |
-| **`invalid_grant` Gmail error** | Your token expired — run `python main.py` again to re-authenticate, then update `GMAIL_TOKEN_JSON` in GitHub secrets |
-| **Notion 404 / unauthorized** | Check `NOTION_DATABASE_ID` and make sure you clicked **Connect to → your integration** inside Notion |
-| **No Telegram messages** | Run `python -c "import telegram_notifier; telegram_notifier.send_message('test')"` to verify connectivity |
-| **Gemini 429 rate limit** | Normal — the keyword fallback activates automatically, no action needed |
-| **All emails show `Unknown`** | Gemini may be down — wait an hour or check [status.cloud.google.com](https://status.cloud.google.com) |
-| **GitHub Action fails** | Check that all 7 secrets are added correctly. Go to **Actions → failed run → logs** to see the exact error |
+|:---|:---|
+| **Browser doesn't open on first run** | Run from a local terminal (not SSH). Gmail OAuth requires a visible browser. |
+| **`invalid_grant` Gmail error** | Token expired — re-run `python main.py` to re-authenticate, then update `GMAIL_TOKEN_JSON` in GitHub Secrets. |
+| **Notion 404 / unauthorized** | Verify `NOTION_DATABASE_ID`. In Notion, open DB → **•••** → **Connect to** → select your integration. |
+| **No Telegram messages** | Test: `python -c "import telegram_notifier; telegram_notifier.send_message('test')"` |
+| **Gemini 429 rate limit** | Normal — keyword fallback activates automatically. Add more keys (comma-separated) to `GEMINI_API_KEY`. |
+| **All emails show `Unknown`** | Gemini may be down — check [status.cloud.google.com](https://status.cloud.google.com). Keyword fallback runs automatically. |
+| **GitHub Action fails** | Verify all 7 secrets are set. Check **Actions → failed run → logs** for the exact error. |
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
-Pull requests are welcome!
+Pull requests are welcome.
 
 1. Fork the repo
-2. Create your feature branch: `git checkout -b feature/amazing-feature`
-3. Commit your changes: `git commit -m 'Add amazing feature'`
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Commit: `git commit -m 'Add amazing feature'`
 4. Push: `git push origin feature/amazing-feature`
 5. Open a Pull Request
 
 ---
 
-## 📄 License
+## Roadmap
+
+- [ ] Support for more job platforms (Naukri, Wellfound, Lever, Greenhouse)
+- [ ] Resume version tracking per application
+- [ ] Follow-up reminder scheduler
+- [ ] Email template suggestions for outreach
+- [ ] Multi-user support (team / club tracking)
+
+---
+
+## License
 
 MIT License — see [LICENSE](LICENSE) for details.
 
@@ -407,10 +406,10 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 <div align="center">
 
-**Built with ❤️ to automate the most tedious part of job hunting.**
+**Built to automate the most tedious part of job hunting.**
 
-If InternPulse helped you, please ⭐ **star the repo** — it helps others find it!
+If Pulse helped you land an internship, please ⭐ **star the repo** — it helps others find it.
 
 [⭐ Star on GitHub](https://github.com/chaitanyakumarAI/AI-Internship-Tracker) &nbsp;·&nbsp; [🐛 Report a Bug](https://github.com/chaitanyakumarAI/AI-Internship-Tracker/issues) &nbsp;·&nbsp; [💡 Request a Feature](https://github.com/chaitanyakumarAI/AI-Internship-Tracker/issues)
 
-</div># NOT-AN-SIMPLE-TODO
+</div>

@@ -42,7 +42,7 @@ def run_pipeline() -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="AI Job Tracker Scheduler")
+    parser = argparse.ArgumentParser(description="Pulse Scheduler")
     parser.add_argument(
         "--once",
         action="store_true",

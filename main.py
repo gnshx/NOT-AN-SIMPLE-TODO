@@ -1,5 +1,5 @@
 """
-main.py — Entry point and pipeline orchestrator for AI Job Tracker.
+main.py — Entry point and pipeline orchestrator for Pulse.
 
 Pipeline:
   1. Print startup diagnostics
@@ -54,7 +54,7 @@ def run_once() -> dict:
     # ── Startup ────────────────────────────────────────────────────────────────
     print_startup_diagnostics()
     logger.info("=" * 60)
-    logger.info("AI Job Tracker — starting pipeline run")
+    logger.info("Pulse — starting pipeline run")
     logger.info("=" * 60)
 
     # ── Step 1: Gmail authentication ──────────────────────────────────────────

@@ -1,5 +1,5 @@
 """
-test_integration.py — Full integration test suite for the AI Internship Tracker.
+test_integration.py — Full integration test suite for the Pulse.
 Tests all modules, the complete pipeline, and verifies fixes from audit.
 
 Run: .venv\\Scripts\\python.exe test_integration.py

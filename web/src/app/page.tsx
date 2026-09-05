@@ -196,7 +196,7 @@ export default function Dashboard() {
         {/* ── System status bar ── */}
         <div className="system-status-bar">
           <span style={{ color: 'var(--accent-green)' }}>●</span>
-          <span>Intern Pulse</span>
+          <span>Pulse</span>
           <span className="sep">·</span>
           <span>{now}</span>
           {isMock && <><span className="sep">·</span><span style={{ color: 'var(--accent-cyan)' }}>DEMO — connect Notion to see live data</span></>}
