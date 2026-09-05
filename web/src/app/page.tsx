@@ -1,12 +1,9 @@
 'use client';
-import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from '@/components/Sidebar';
 import ActivityChart from '@/components/ActivityChart';
 import { RefreshCw, ChevronDown, Shield, MapPin } from 'lucide-react';
-
-const ParticleSphere = dynamic(() => import('@/components/ParticleSphere'), { ssr: false });
 
 interface Job {
   id: string; company: string; role: string; status: string;
@@ -278,11 +275,6 @@ export default function Dashboard() {
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.52rem', letterSpacing: '0.15em', color: 'var(--text-dim)', marginBottom: 4 }}>{'//'} JOB SAFETY SCANNER</div>
                 <div style={{ fontFamily: 'var(--font-display)', fontSize: '0.9rem', fontWeight: 700, letterSpacing: '0.08em', color: 'var(--text-primary)' }}>
                   Safety & New Leads
-                </div>
-              </div>
-              <div style={{ background: 'rgba(0,0,0,0.3)', display: 'flex', justifyContent: 'center', padding: '4px 0' }}>
-                <div className="particle-sphere-wrapper">
-                  <ParticleSphere size={180} particleCount={2800} color="#00ff88" particleSize={0.017} />
                 </div>
               </div>
               <div style={{ padding: '4px 16px 10px', borderTop: '1px solid var(--border-dim)' }}>

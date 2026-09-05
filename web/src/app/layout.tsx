@@ -10,8 +10,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body style={{ background: 'var(--bg-void)', overflowX: 'hidden' }}>
-        {/* Top chromatic accent bar */}
-        <div className="top-accent-line" />
         {children}
       </body>
     </html>

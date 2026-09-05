@@ -1,12 +1,9 @@
 'use client';
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from '@/components/Sidebar';
 import { AlertTriangle, Sparkles, Shield, Zap } from 'lucide-react';
-
-const ParticleSphere = dynamic(() => import('@/components/ParticleSphere'), { ssr: false });
 
 interface Job { id: string; company: string; role: string; status: string; platform: string; date: string; scam_risk?: string; risk_notes?: string; }
 
@@ -203,14 +200,9 @@ export default function HubPage() {
           {/* RIGHT — orb + safety score */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-            {/* Particle sphere */}
+            {/* Scanner summary */}
             <motion.div initial={{ opacity: 0, scale: 0.88 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3, duration: 0.65 }}
               className="glass-card" style={{ borderRadius: 4, overflow: 'hidden', border: '1px solid rgba(255,0,128,0.12)', textAlign: 'center' }}>
-              <div style={{ background: 'rgba(0,0,0,0.35)', padding: '4px 0 0', display: 'flex', justifyContent: 'center' }}>
-                <div className="particle-sphere-wrapper">
-                  <ParticleSphere size={190} particleCount={3000} color="#ff0080" particleSize={0.016} />
-                </div>
-              </div>
               <div style={{ padding: '8px 16px 14px', borderTop: '1px solid var(--border-dim)' }}>
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.5rem', color: 'var(--text-dim)', textAlign: 'center', letterSpacing: '0.12em' }}>
                   Smart Scanner Active
