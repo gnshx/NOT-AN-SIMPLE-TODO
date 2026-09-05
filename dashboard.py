@@ -183,7 +183,7 @@ def print_full_dashboard(apps: list[dict]) -> None:
     width = 62
     print()
     print(_c("=" * width, "bold"))
-    print(_c("   AI INTERNSHIP TRACKER — LIVE DASHBOARD", "bold"))
+    print(_c("   DAYNIGHT PILOT — LIVE DASHBOARD", "bold"))
     print(_c(f"   Generated: {now}", "dim"))
     print(_c("=" * width, "bold"))
 

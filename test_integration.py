@@ -28,7 +28,7 @@ def test(name: str, fn):
 
 print()
 print("=" * 65)
-print("   AI INTERNSHIP TRACKER — INTEGRATION TEST SUITE")
+print("   DAYNIGHT PILOT — INTEGRATION TEST SUITE")
 print("=" * 65)
 
 # ── 1. Python version ──────────────────────────────────────────────────────
