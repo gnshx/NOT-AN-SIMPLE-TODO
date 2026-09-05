@@ -1,0 +1,16 @@
+services:
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    image: daynightpilot-web:latest
+    container_name: daynightpilot-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
+      NOTION_API_KEY: ${NOTION_API_KEY:-}
+      NOTION_DATABASE_ID: ${NOTION_DATABASE_ID:-}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
