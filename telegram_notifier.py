@@ -131,7 +131,7 @@ def notify_summary(stats: dict) -> bool:
     stats: {processed, created, updated, skipped, errors}
     """
     msg = (
-        f"📊 <b>Pulse — Run Summary</b>\n"
+        f"📊 <b>DayNight Pilot — Run Summary</b>\n"
         f"\n✅ Processed: {stats.get('processed', 0)} emails"
         f"\n🆕 Created:   {stats.get('created', 0)} new rows"
         f"\n🔄 Updated:   {stats.get('updated', 0)} rows"

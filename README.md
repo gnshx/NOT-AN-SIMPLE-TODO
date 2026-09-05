@@ -1,10 +1,10 @@
 <div align="center">
 
-# ⚡ Pulse
+# ⚡ DayNight Pilot
 
-### Autonomous AI-Powered Application Tracking
+### Your Personal Command Center for Tasks, Schedule, and Job Applications
 
-**Reads Gmail → Classifies with Gemini AI → Detects scam companies → Syncs Notion → Alerts Telegram — fully automated every 3 hours, zero servers, zero cost.**
+**Day planner • Kanban task management • Gmail AI intelligence • Smart reminders • Telegram notifications — all in one place.**
 
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![Gemini AI](https://img.shields.io/badge/Gemini_AI-2.5_Flash-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://deepmind.google/technologies/gemini/)
@@ -20,17 +20,23 @@
 
 ## TL;DR
 
-Pulse is a **fully autonomous application tracking system**. It monitors your Gmail inbox, uses Google Gemini AI to classify every job-related email, runs scam-detection research on new companies, upserts results into a Notion database, and pushes rich alerts to Telegram — all on a **3-hour schedule via GitHub Actions**. A cinematic Next.js dashboard provides real-time pipeline visualization.
+DayNight Pilot is a **smart productivity and job application tracker**. It combines a day planner, task management, job application Kanban, Gmail AI intelligence, and Telegram notifications into one unified command center. AI monitors your Gmail inbox, classifies job-related emails, extracts application status, and updates your pipeline automatically — with confidence scoring and user confirmation for uncertain actions.
 
-No server. No cron daemon. No manual work after setup.
+No more scattered spreadsheets. No more manually updating application status. One dashboard for your entire productivity life.
 
 ---
 
 ## The Problem
 
-Applying to jobs and internships generates a flood of email across dozens of portals — confirmations, OAs, interview invites, rejections, ghosted applications. Manually tracking status in a spreadsheet is error-prone and reactive. By the time you update your tracker, you've already missed interview prep time.
+You're managing:
+- Daily tasks and to-dos across multiple tools
+- Job applications spread across LinkedIn, Internshala, email, and company portals
+- Interview schedules, follow-ups, and deadlines
+- Gmail flooded with confirmations, OAs, rejections, and offers
 
-**Pulse solves this by making your inbox the source of truth.** Every relevant email is read, understood, and acted upon automatically.
+Switching between apps, updating spreadsheets, and manually tracking status wastes hours every week. By the time you update your tracker, you've already missed prep time for interviews.
+
+**DayNight Pilot solves this by unifying your tasks, schedule, and job applications in one intelligent system.**
 
 ---
 
@@ -38,14 +44,17 @@ Applying to jobs and internships generates a flood of email across dozens of por
 
 | Feature | Detail |
 |:---|:---|
-| **AI Email Classification** | Gemini 2.5 Flash extracts company, role, status, platform, OA links, and confidence scores from unstructured email. Keyword fallback ensures zero downtime. |
-| **Scam Risk Detection** | Web-searches every new company via DuckDuckGo + Gemini analysis. Flags High / Medium / Low risk with explainable notes. Includes a heuristic blocklist for known predatory platforms. |
-| **Interview Prep Sheets** | When an interview is scheduled, automatically generates tech stack, recent company news, and likely interview questions. |
-| **Job Opportunity Radar** | Extracts best-fit roles from digest emails (LinkedIn, Internshala, Unstop) and sends instant Telegram alerts. |
-| **Notion Sync** | Auto-creates and upserts rows with deduplication (email-ID + Company+Role merge). Avoids duplicates across re-runs. |
-| **Rich Telegram Alerts** | HTML-formatted messages with emoji, company, role, risk score, prep sheet, and OA links. |
-| **Next.js Dashboard** | Cinematic dark-mode UI with Kanban board, funnel chart, activity timeline, safety scanner, and real-time stats. |
-| **Multi-Key Rate-Limit Resilience** | Rotates across multiple Gemini API keys automatically. Sleeps respect 15 req/min limits. |
+| **Day Planner** | Time-blocked daily schedule with priorities, drag-and-drop ordering, and progress tracking. |
+| **Task Management** | Create, edit, delete tasks with due dates, priorities, categories, subtasks, and recurring schedules. |
+| **Job Application Kanban** | Visual pipeline: Applied → Shortlisted → HR Round → Technical → Managerial → Offer/Rejected. Drag-and-drop updates. |
+| **Gmail AI Intelligence** | Gemini 2.5 Flash reads your inbox, classifies job emails, extracts company/position/status/interview dates automatically. |
+| **Confidence-Based Updates** | AI classification includes confidence scores. High-confidence updates apply automatically; uncertain ones require your confirmation. |
+| **Scam Risk Detection** | Web-researches new companies via DuckDuckGo + Gemini analysis. Flags High / Medium / Low risk with explainable notes. |
+| **Smart Reminders** | Multi-tier reminders per task: 7 days, 24 hours, 12 hours, 3 hours, 1 hour, 15 minutes before deadlines. |
+| **Telegram Bot** | Rich HTML notifications for task reminders, interview alerts, application updates, and daily summaries. |
+| **Telegram Commands** | `/today`, `/tasks`, `/jobs`, `/interviews`, `/done`, `/remind` — control your command center from your phone. |
+| **Next.js Dashboard** | Cinematic dark-mode UI with day planner, Kanban board, task list, funnel chart, activity timeline, and real-time stats. |
+| **Notion Sync** | Auto-creates and upserts rows with deduplication. Tasks and job applications synced bidirectionally. |
 | **Fully Cloud Automated** | GitHub Actions runs the pipeline every 3 hours — no local machine, no VPS, no cost. |
 | **Local Scheduler** | `python scheduler.py` for local/offline runs with the same pipeline. |
 
@@ -55,12 +64,12 @@ Applying to jobs and internships generates a flood of email across dozens of por
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        Pulse Pipeline                           │
+│                     DayNight Pilot Pipeline                     │
 ├──────────────┬──────────────┬──────────────┬───────────────────┤
 │  Gmail Inbox │  Gemini AI   │  Web Research│  Notion Database  │
-│  (OAuth2)    │  (2.5 Flash) │  (DuckDuckGo)│  (Upsert + Dedup) │
+│  (OAuth2)    │  (2.5 Flash) │  (DuckDuckGo)│  (Tasks + Jobs)   │
 │   ▼          │   ▼          │   ▼          │   ▼               │
-│ gmail_reader │ status_      │ company_     │ notion_updater    │
+│ gmail_reader │ email_       │ company_     │ notion_updater    │
 │              │ classifier   │ researcher   │                   │
 └──────┬───────┴──────┬──────┴──────┬──────┴────────┬──────────┘
        │              │             │               │
@@ -77,19 +86,56 @@ Applying to jobs and internships generates a flood of email across dozens of por
                           ▼
               ┌─────────────────────────┐
               │  Next.js Dashboard      │
-              │  (Kanban, Funnel, Chart)│
+              │  (Planner, Kanban, Funnel)│
               └─────────────────────────┘
 ```
 
 ### Data Flow
 
 1. **Ingest** — `gmail_reader.py` fetches latest inbox messages via Gmail API v1 (OAuth2).
-2. **Pre-filter** — `utils.py` discards non-job emails using regex heuristics (saves AI quota).
-3. **Classify** — `status_classifier.py` sends email text to Gemini 2.5 Flash with a structured system prompt. Falls back to a 50+ keyword rule-based classifier if the API is rate-limited.
-4. **Research** — `company_researcher.py` runs DuckDuckGo searches for scam signals and (if interview) tech-stack / interview questions. Gemini synthesizes results into structured JSON.
-5. **Persist** — `notion_updater.py` upserts into Notion with deduplication via embedded email IDs and Company+Role matching.
-6. **Notify** — `telegram_notifier.py` sends formatted HTML alerts for new applications, status changes, and hot job opportunities.
-7. **Mark Done** — `email_history.py` persists processed Gmail IDs to `data/processed_emails.json` to prevent re-processing.
+2. **Classify** — `status_classifier.py` sends email text to Gemini 2.5 Flash with structured system prompts. Falls back to keyword rules if rate-limited.
+3. **Research** — `company_researcher.py` runs DuckDuckGo searches for scam signals and interview prep. Gemini synthesizes results into structured JSON.
+4. **Confirm** — High-confidence updates apply automatically. Uncertain emails surface as suggestions with [Confirm] [Edit] [Ignore] actions.
+5. **Persist** — `notion_updater.py` upserts tasks and job applications with deduplication via email IDs and Company+Role matching.
+6. **Notify** — `telegram_notifier.py` sends formatted HTML alerts for new applications, status changes, reminders, and daily summaries.
+7. **Mark Done** — `email_history.py` persists processed Gmail IDs to prevent re-processing.
+
+---
+
+## Core Modules
+
+### Day Planner & Tasks
+- Time-blocked daily schedule
+- Drag-and-drop task ordering
+- Priorities, categories, tags, subtasks
+- Recurring tasks with customizable reminder schedules
+- Progress tracking with visual bars
+
+### Job Application Tracker
+- Visual Kanban pipeline with 8 stages
+- Company, position, application date, job URL, recruiter contact
+- Interview dates, follow-up dates, notes
+- Activity timeline per application
+- Drag-and-drop status updates synced to Notion
+
+### Gmail Intelligence
+- Google OAuth2 secure authentication
+- AI email classification into: JOB_APPLICATION, APPLICATION_RECEIVED, REJECTED, SHORTLISTED, INTERVIEW_INVITATION, OFFER, RECRUITER_CONTACT, FOLLOW_UP, OTHER
+- Structured extraction: company, position, status, interview date, location, source
+- Confidence scoring with automatic or manual confirmation
+- Activity timeline auto-generated from email history
+
+### Smart Reminders
+- Multi-tier notification system per task
+- Presets: Normal, Important, Critical, Custom
+- Telegram delivery with rich formatting
+- Interview prep alerts with company research
+
+### Telegram Bot
+- Rich HTML notifications with emoji and formatting
+- Commands: `/today`, `/tasks`, `/jobs`, `/interviews`, `/done`, `/remind`
+- Daily summary reports
+- Run summaries with metrics
 
 ---
 
@@ -151,16 +197,31 @@ Then open Notion → your new database → **•••** → **Connect to** → 
 
 **Or create manually** with these properties:
 
+**Tasks Table:**
+| Property | Type | Notes |
+|:---|:---|:---|
+| Title | Title | Task name |
+| Status | Select | Todo, In Progress, Done, Blocked |
+| Priority | Select | Low, Medium, High, Critical |
+| Due Date | Date | |
+| Category | Select | Work, Study, Personal, Job Search |
+| Subtasks | Text | |
+| Notes | Text | |
+| Last Updated | Date | |
+
+**Job Applications Table:**
 | Property | Type | Notes |
 |:---|:---|:---|
 | Company | Title | Primary field |
 | Role | Text | |
-| Status | Select | Applied, Under Review, OA Sent, Interview Scheduled, Rejected, Offer, Ghosted |
+| Status | Select | Applied, Shortlisted, HR Round, Technical Round, Managerial Round, Offer, Rejected |
 | Email ID | Text | Deduplication key |
 | Sender | Text | |
 | Subject | Text | |
 | Date Received | Date | |
 | OA Link | URL | |
+| Interview Date | Date | |
+| Follow-up Date | Date | |
 | Notes | Text | AI reasoning + `[eid:xxxx]` prefix |
 | Last Updated | Date | |
 | Scam Risk | Select | High, Medium, Low |
@@ -203,14 +264,6 @@ python dashboard.py --compact  # One-line summary
 python dashboard.py --json     # JSON output
 ```
 
-Output includes:
-- Key metrics (total, active, interviews, offers, rejections, ghosted)
-- Status breakdown with visual bars
-- Platform breakdown (LinkedIn, Email, Internshala, etc.)
-- Top companies
-- Recent activity (last 5)
-- Pipeline health warnings (high ghost rate, >50% rejections)
-
 ---
 
 ## Web Dashboard
@@ -235,17 +288,20 @@ NOTION_DATABASE_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 | Route | Page | Description |
 |:---|:---|:---|
-| `/` | Dashboard | Application list, stats, safety scanner, activity chart, funnel |
+| `/` | Dashboard | Today's tasks, job pipeline, stats, notifications |
+| `/planner` | Day Planner | Time-blocked daily schedule with drag-and-drop |
+| `/tasks` | Task Manager | Full task CRUD with priorities, categories, reminders |
 | `/pipeline` | Job Board | Kanban board by status with drag-and-drop |
-| `/hub` | AI Insights | Job opportunity alerts & tips |
+| `/hub` | AI Insights | Gmail intelligence, job opportunities, prep sheets |
 
 ### Dashboard Features
 
-- **Real-time stats** — Active applications, interviews, offers, response rate
+- **Day Planner** — Time-blocked schedule with task ordering and progress tracking
+- **Task Manager** — Create, edit, delete, prioritize, categorize, set reminders
+- **Kanban Board** — Drag-and-drop job application pipeline synced to Notion
+- **Activity Timeline** — Monthly application volume and task completion chart
+- **Funnel View** — Applied → Shortlisted → HR → Technical → Managerial → Offer pipeline
 - **Safety Scanner** — 3D particle visualization + scam risk flags + trust score
-- **Kanban Board** — Drag-and-drop status updates synced to Notion
-- **Activity Timeline** — Monthly application volume chart
-- **Funnel View** — Applied → Reviewing → OA → Interview → Offer pipeline
 - **Filter Pills** — Quick-filter by status with animated counters
 
 ---
@@ -272,7 +328,7 @@ Runs automatically in the cloud every 3 hours for free.
 
 4. Done. The workflow in `.github/workflows/tracker.yml` runs every 3 hours.
 
-**Manual trigger:** Actions tab → **Pulse** → **Run workflow**
+**Manual trigger:** Actions tab → **DayNight Pilot** → **Run workflow**
 
 ---
 
@@ -280,10 +336,10 @@ Runs automatically in the cloud every 3 hours for free.
 
 ```
 AI-Internship-Tracker/
-├── main.py                 # Pipeline orchestrator (entry point)
+├── main.py                 # Pipeline orchestrator (Gmail → AI → Notion → Telegram)
 ├── scheduler.py            # Recurring 3-hour local scheduler
 ├── gmail_reader.py         # Gmail OAuth2 + email fetching & parsing
-├── status_classifier.py    # Gemini AI + keyword fallback + multi-key rotation
+├── email_classifier.py     # Gemini AI + keyword fallback + multi-key rotation
 ├── company_researcher.py   # DuckDuckGo + Gemini scam analysis + interview prep
 ├── notion_updater.py       # Notion DB upsert with deduplication
 ├── telegram_notifier.py    # Rich HTML Telegram message builder & sender
@@ -299,6 +355,8 @@ AI-Internship-Tracker/
 ├── web/                    # Next.js 15 dashboard
 │   ├── src/app/
 │   │   ├── page.tsx        # Dashboard (stats, activity, funnel, scanner)
+│   │   ├── planner/page.tsx # Day planner with time blocks
+│   │   ├── tasks/page.tsx  # Task manager with CRUD
 │   │   ├── pipeline/page.tsx # Kanban board (drag-and-drop)
 │   │   ├── hub/page.tsx    # AI Insights / job opportunity radar
 │   │   └── api/            # Next.js API routes (Notion proxy)
@@ -390,6 +448,14 @@ Pull requests are welcome.
 
 ## Roadmap
 
+- [ ] Day planner with time-blocking and drag-and-drop
+- [ ] Full task management with subtasks, recurring tasks, and categories
+- [ ] Job application Kanban with 8-stage pipeline
+- [ ] Gmail AI classification with confidence-based confirmation flow
+- [ ] Smart multi-tier reminder system
+- [ ] Telegram command interface (`/today`, `/tasks`, `/jobs`, `/interviews`)
+- [ ] Activity timeline per application
+- [ ] AI assistant for daily planning and interview prep
 - [ ] Support for more job platforms (Naukri, Wellfound, Lever, Greenhouse)
 - [ ] Resume version tracking per application
 - [ ] Follow-up reminder scheduler
@@ -406,9 +472,9 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 <div align="center">
 
-**Built to automate the most tedious part of job hunting.**
+**Built to automate the most tedious parts of productivity and job hunting.**
 
-If Pulse helped you land an internship, please ⭐ **star the repo** — it helps others find it.
+If DayNight Pilot helped you land an internship or boosted your productivity, please ⭐ **star the repo** — it helps others find it.
 
 [⭐ Star on GitHub](https://github.com/chaitanyakumarAI/AI-Internship-Tracker) &nbsp;·&nbsp; [🐛 Report a Bug](https://github.com/chaitanyakumarAI/AI-Internship-Tracker/issues) &nbsp;·&nbsp; [💡 Request a Feature](https://github.com/chaitanyakumarAI/AI-Internship-Tracker/issues)
 

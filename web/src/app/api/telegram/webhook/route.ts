@@ -96,7 +96,7 @@ export async function POST(req: Request) {
 
       await sendTelegramMessage(chatId, `✅ <b>Success!</b>\nMoved <b>${job.company}</b> to <code>${newStatus}</code>.`);
     } else {
-      await sendTelegramMessage(chatId, "👋 Welcome to Pulse Bot.\nCommands available:\n<code>/status [Company] [Status]</code> - Update an application");
+      await sendTelegramMessage(chatId, "👋 Welcome to DayNight Pilot Bot.\nCommands available:\n<code>/status [Company] [Status]</code> - Update an application");
     }
 
     return NextResponse.json({ ok: true });

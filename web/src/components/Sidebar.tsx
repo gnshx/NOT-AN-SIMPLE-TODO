@@ -32,7 +32,7 @@ export default function Sidebar() {
         {/* Logo */}
         <div style={{ padding: '22px 16px 18px', borderBottom: '1px solid rgba(30,35,60,0.5)', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {/* Pulse icon */}
+            {/* DayNight Pilot icon */}
             <div style={{
               width: 28, height: 28, borderRadius: 6, flexShrink: 0,
               background: 'rgba(0,255,136,0.12)',

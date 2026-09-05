@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Pulse | Internship Tracker',
-  description: 'Track all your internship applications in one place. Get AI-powered safety alerts, interview prep tips, and real-time status updates.',
+  title: 'DayNight Pilot | Productivity & Job Tracker',
+  description: 'Your personal command center for tasks, schedule, and job applications. Day planner, Kanban board, Gmail AI intelligence, and Telegram notifications.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

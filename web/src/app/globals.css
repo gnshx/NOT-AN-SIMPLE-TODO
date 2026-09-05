@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   PULSE  ·  Cinematic Cyberpunk Design System v3.0
+   DAYNIGHT PILOT  ·  Cinematic Cyberpunk Design System v3.0
    ═══════════════════════════════════════════════════════════════ */
 
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
@@ -237,7 +237,7 @@ body::after {
   color: var(--accent-green);
 }
 
-/* ── Pulse dot ── */
+/* ── DayNight Pilot dot ── */
 .pulse-dot {
   width: 6px; height: 6px;
   border-radius: 50%;

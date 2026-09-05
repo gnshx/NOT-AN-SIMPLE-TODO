@@ -1,5 +1,5 @@
 """
-test_integration.py — Full integration test suite for the Pulse.
+test_integration.py — Full integration test suite for the DayNight Pilot.
 Tests all modules, the complete pipeline, and verifies fixes from audit.
 
 Run: .venv\\Scripts\\python.exe test_integration.py
