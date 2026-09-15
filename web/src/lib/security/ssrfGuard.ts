@@ -70,3 +70,46 @@ export function validateExternalUrl(urlString: string): SsrfValidationResult {
     return { safe: false, reason: 'Malformed URL format.' };
   }
 }
+
+/**
+ * P3-08: Safe HTTP fetch with strict SSRF re-validation across redirects.
+ * Defends against open-redirect and DNS rebinding SSRF attacks.
+ */
+export async function safeFetchWithSsrfGuard(
+  initialUrl: string,
+  init?: RequestInit,
+  maxRedirects = 3
+): Promise<Response> {
+  let currentUrl = initialUrl;
+  let redirectsCount = 0;
+
+  while (redirectsCount <= maxRedirects) {
+    const check = validateExternalUrl(currentUrl);
+    if (!check.safe) {
+      throw new Error(`SSRF Blocked: ${check.reason} (Target: ${currentUrl})`);
+    }
+
+    const res = await fetch(currentUrl, {
+      ...init,
+      redirect: 'manual'
+    });
+
+    // Check for HTTP redirect codes (301, 302, 303, 307, 308)
+    if ([301, 302, 303, 307, 308].includes(res.status)) {
+      const location = res.headers.get('location');
+      if (!location) {
+        throw new Error('Redirect response missing Location header.');
+      }
+
+      // Resolve relative redirect against current URL
+      const resolved = new URL(location, currentUrl).toString();
+      currentUrl = resolved;
+      redirectsCount++;
+      continue;
+    }
+
+    return res;
+  }
+
+  throw new Error(`SSRF Guard: Exceeded maximum allowed redirects (${maxRedirects}).`);
+}

@@ -35,8 +35,15 @@ export async function POST(request: Request) {
       );
     }
 
-    // 4. Execution
-    const response = await runPilotAgent(query, { workspaceId: workspaceId || 'default-workspace' });
+    // 4. Gateway Execution with Budget, Routing, and Safeguards
+    const { executeAiGateway } = await import('@/lib/ai/gateway');
+    const response = await executeAiGateway({
+      query,
+      userId: 'usr-default',
+      workspaceId: workspaceId || 'default-workspace',
+      role: 'MEMBER',
+      tier: 'FREE'
+    });
     return NextResponse.json(response);
   } catch (error) {
     return handleApiError(error);

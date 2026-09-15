@@ -103,10 +103,28 @@ export const TOOL_FIREWALL_REGISTRY: Record<string, ToolDefinition> = {
     requiresStepUpAuth: false,
     schema: { companyName: 'string', role: 'string' }
   },
+  scheduleInterviewPrep: {
+    name: 'scheduleInterviewPrep',
+    description: 'Generate interview preparation checklist and blocks',
+    riskLevel: 'LOW',
+    requiredPermission: 'view_applications',
+    requiresHumanApproval: false,
+    requiresStepUpAuth: false,
+    schema: { companyName: 'string', role: 'string' }
+  },
 
   // MEDIUM Risk Tools
   modifyApplicationStatus: {
     name: 'modifyApplicationStatus',
+    description: 'Change job application pipeline status',
+    riskLevel: 'MEDIUM',
+    requiredPermission: 'edit_applications',
+    requiresHumanApproval: true,
+    requiresStepUpAuth: false,
+    schema: { applicationId: 'string', newStatus: 'string' }
+  },
+  updateApplicationStatus: {
+    name: 'updateApplicationStatus',
     description: 'Change job application pipeline status',
     riskLevel: 'MEDIUM',
     requiredPermission: 'edit_applications',
@@ -325,3 +343,5 @@ export async function evaluateToolCallFirewall(
     sanitizedPayload
   };
 }
+
+export const evaluateToolCall = evaluateToolCallFirewall;
