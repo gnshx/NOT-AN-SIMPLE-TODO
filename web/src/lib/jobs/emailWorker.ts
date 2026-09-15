@@ -3,6 +3,7 @@ import { getBullMQConnectionOptions } from '../redis';
 import { EmailIngestionJobData } from './queue';
 import { detectPromptInjection } from '../security/promptInjection';
 import { ScopedDb } from '../security/scopedDb';
+import { executeIdempotentJob } from './deduplication';
 
 export interface EmailProcessingResult {
   jobId: string;
@@ -18,9 +19,20 @@ export interface EmailProcessingResult {
 
 /**
  * Parses and processes incoming career application emails.
- * Hardened with prompt-injection defense before any processing.
+ * Hardened with prompt-injection defense and worker idempotency.
  */
 export async function processEmailIngestionJob(data: EmailIngestionJobData): Promise<EmailProcessingResult> {
+  const { jobId, rawBody, subject, sender, workspaceId, userId } = data;
+
+  const dedupKey = `email-job:${jobId}`;
+  const { result } = await executeIdempotentJob(dedupKey, async () => {
+    return runEmailIngestionPipeline(data);
+  });
+
+  return result;
+}
+
+async function runEmailIngestionPipeline(data: EmailIngestionJobData): Promise<EmailProcessingResult> {
   const { jobId, rawBody, subject, sender, workspaceId, userId } = data;
 
   // 1. Mandatory Security Check: Scan subject and body for Prompt Injection / Jailbreaks
