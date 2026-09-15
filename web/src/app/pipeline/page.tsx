@@ -1,242 +1,873 @@
 'use client';
-import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
 import Sidebar from '@/components/Sidebar';
-import { Shield, MapPin } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Briefcase,
+  Plus,
+  Clock,
+  ExternalLink,
+  FileCode,
+  Calendar,
+  X,
+  Trash2,
+  Edit3,
+  CheckCircle2,
+  AlertTriangle,
+  ArrowRight,
+  Filter,
+  Layers,
+  Sparkles,
+  Zap
+} from 'lucide-react';
 
-interface Job {
-  id: string; company: string; role: string; status: string;
-  platform: string; date: string; scam_risk?: string; oa_link?: string;
+export type KanbanStatus =
+  | 'APPLIED'
+  | 'REPLIED'
+  | 'ASSIGNMENT_TEST'
+  | 'INTERVIEW'
+  | 'SELECTED_OFFER'
+  | 'REJECTED';
+
+export interface KanbanJob {
+  id: string;
+  company: string;
+  role: string;
+  status: KanbanStatus;
+  platform: string;
+  appliedDate: string;
+  matchScore: number;
+  location: string;
+  dueDate?: string;
+  oaLink?: string;
+  recruiter?: string;
+  notes?: string;
 }
 
-const COLUMNS = [
-  { key: 'Applied',             label: 'APPLIED',   color: 'rgba(180,188,230,0.75)', border: 'rgba(180,188,230,0.2)' },
-  { key: 'Under Review',        label: 'REVIEWING', color: '#a855f7',                border: 'rgba(168,85,247,0.25)' },
-  { key: 'OA Sent',             label: 'OA SENT',   color: '#ff8c00',                border: 'rgba(255,140,0,0.25)'  },
-  { key: 'Interview Scheduled', label: 'INTERVIEW', color: '#00c8ff',                border: 'rgba(0,200,255,0.25)'  },
-  { key: 'Offer',               label: 'OFFER',     color: '#00ff88',                border: 'rgba(0,255,136,0.3)'   },
-  { key: 'Rejected',            label: 'REJECTED',  color: '#ff5566',                border: 'rgba(255,85,102,0.22)' },
-  { key: 'Job Opportunity',     label: 'RADAR',     color: '#ff0080',                border: 'rgba(255,0,128,0.22)'  },
+const COLUMNS: { id: KanbanStatus; label: string; color: string; bgBadge: string; borderBadge: string }[] = [
+  { id: 'APPLIED', label: 'APPLIED', color: '#94a3b8', bgBadge: 'rgba(148, 163, 184, 0.14)', borderBadge: 'rgba(148, 163, 184, 0.3)' },
+  { id: 'REPLIED', label: 'REPLIED', color: '#a78bfa', bgBadge: 'rgba(167, 139, 250, 0.14)', borderBadge: 'rgba(167, 139, 250, 0.3)' },
+  { id: 'ASSIGNMENT_TEST', label: 'ASSIGNMENT / TEST', color: '#fbbf24', bgBadge: 'rgba(251, 191, 36, 0.14)', borderBadge: 'rgba(251, 191, 36, 0.3)' },
+  { id: 'INTERVIEW', label: 'INTERVIEW', color: '#60a5fa', bgBadge: 'rgba(96, 165, 250, 0.14)', borderBadge: 'rgba(96, 165, 250, 0.3)' },
+  { id: 'SELECTED_OFFER', label: 'SELECTED / JOB OFFER GIVEN', color: '#34d399', bgBadge: 'rgba(52, 211, 153, 0.14)', borderBadge: 'rgba(52, 211, 153, 0.3)' },
+  { id: 'REJECTED', label: 'REJECTED', color: '#f87171', bgBadge: 'rgba(248, 113, 113, 0.14)', borderBadge: 'rgba(248, 113, 113, 0.3)' }
 ];
 
-const RISK_COLOR: Record<string, string> = { Low: '#00ff88', Medium: '#ff8c00', High: '#ff5566', Unknown: 'var(--text-dim)' };
-
-const AVATAR_PALETTE = [
-  ['#00ff88','#001a0d'], ['#00c8ff','#001829'], ['#a855f7','#1a0030'],
-  ['#ff8c00','#1a0b00'], ['#ff0080','#1a0015'], ['#ff5566','#1a000a'],
-  ['#f0e040','#1a1800'], ['#60e0ff','#001822'],
+const INITIAL_JOBS: KanbanJob[] = [
+  {
+    id: 'k1',
+    company: 'Google',
+    role: 'Software Engineer (Backend)',
+    status: 'INTERVIEW',
+    platform: 'Company Portal',
+    appliedDate: 'May 02, 2026',
+    matchScore: 94,
+    location: 'Bengaluru / Remote',
+    dueDate: 'Sept 18, 2026 • 4:00 PM IST',
+    recruiter: 'Alex Rivera',
+    notes: 'System Design Round scheduled.'
+  },
+  {
+    id: 'k2',
+    company: 'Stripe',
+    role: 'Backend Engineer',
+    status: 'REPLIED',
+    platform: 'Direct Email',
+    appliedDate: 'May 05, 2026',
+    matchScore: 90,
+    location: 'Remote',
+    recruiter: 'Sarah Jenkins',
+    dueDate: 'Sept 20, 2026 • Recruiter phone screen'
+  },
+  {
+    id: 'k3',
+    company: 'FinTech Stack',
+    role: 'Systems Engineer',
+    status: 'ASSIGNMENT_TEST',
+    platform: 'Wellfound',
+    appliedDate: 'May 10, 2026',
+    matchScore: 88,
+    location: 'Bengaluru',
+    dueDate: 'Sept 22, 2026 • 90 min test (Due Soon)',
+    oaLink: 'https://hackerrank.com/fintech-oa-2026',
+    notes: 'HackerRank 90 min coding test on concurrency.'
+  },
+  {
+    id: 'k4',
+    company: 'CloudVentures',
+    role: 'AI Engineer',
+    status: 'SELECTED_OFFER',
+    platform: 'Unstop',
+    appliedDate: 'May 12, 2026',
+    matchScore: 96,
+    location: 'Remote',
+    dueDate: 'Offer Accepted • Start Oct 1',
+    notes: 'Offer letter signed & counter-verified.'
+  },
+  {
+    id: 'k5',
+    company: 'Acme Corp',
+    role: 'Full Stack Engineer',
+    status: 'APPLIED',
+    platform: 'LinkedIn',
+    appliedDate: 'May 08, 2026',
+    matchScore: 84,
+    location: 'Hybrid'
+  },
+  {
+    id: 'k6',
+    company: 'DataScale Inc',
+    role: 'Data Platform Engineer',
+    status: 'REJECTED',
+    platform: 'Naukri',
+    appliedDate: 'Apr 28, 2026',
+    matchScore: 79,
+    location: 'Bengaluru',
+    notes: 'Position closed internally.'
+  }
 ];
-function getInitials(name: string) {
-  return name.replace(/[^a-zA-Z\s]/g, '').split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
-}
-function getAvatarColor(name: string) {
-  let h = 0; for (const c of name) h = (h * 31 + c.charCodeAt(0)) & 0xffff;
-  return AVATAR_PALETTE[h % AVATAR_PALETTE.length];
-}
-
-function KanbanCard({ job, colColor, onDragStart }: { job: Job; colColor: string; onDragStart: (e: React.DragEvent) => void }) {
-  const [fg, bg] = getAvatarColor(job.company);
-  const initials = getInitials(job.company);
-  const risk     = job.scam_risk ?? 'Unknown';
-
-  return (
-    <div 
-      draggable
-      onDragStart={onDragStart}
-      style={{
-      background: 'rgba(8,10,18,0.9)',
-      border: `1px solid rgba(60,70,120,0.2)`,
-      borderRadius: 4, marginBottom: 8,
-      transition: 'border-color 0.18s, box-shadow 0.18s',
-      cursor: 'default', overflow: 'hidden',
-    }}
-      onMouseEnter={e => {
-        (e.currentTarget as HTMLElement).style.borderColor = `${colColor}45`;
-        (e.currentTarget as HTMLElement).style.boxShadow = `0 0 14px ${colColor}12`;
-      }}
-      onMouseLeave={e => {
-        (e.currentTarget as HTMLElement).style.borderColor = 'rgba(60,70,120,0.2)';
-        (e.currentTarget as HTMLElement).style.boxShadow = 'none';
-      }}
-    >
-      {/* Top color bar */}
-      <div style={{ height: 2, background: `linear-gradient(90deg, ${colColor}, transparent)`, opacity: 0.6 }} />
-
-      <div style={{ padding: '12px 12px 10px' }}>
-        {/* Avatar + company */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 8 }}>
-          <div style={{
-            width: 32, height: 32, borderRadius: 4, flexShrink: 0,
-            background: bg, color: fg, border: `1px solid ${fg}30`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.7rem', letterSpacing: '0.04em',
-          }}>
-            {initials}
-          </div>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.07em', color: 'var(--text-primary)', lineHeight: 1.1 }}>
-              {job.company.toUpperCase()}
-            </div>
-            <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 2, lineHeight: 1.2 }}>
-              {job.role}
-            </div>
-          </div>
-        </div>
-
-        {/* Meta row */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-            <MapPin size={8} style={{ color: 'var(--text-dim)' }} />
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.5rem', color: 'var(--text-dim)' }}>
-              {job.platform}
-            </span>
-          </div>
-          {risk !== 'Unknown' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-              <Shield size={8} style={{ color: RISK_COLOR[risk] }} />
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.5rem', color: RISK_COLOR[risk] }}>{risk}</span>
-            </div>
-          )}
-        </div>
-
-        {/* OA link */}
-        {job.oa_link && (
-          <a href={job.oa_link} target="_blank" rel="noreferrer"
-            style={{ display: 'block', marginTop: 8, fontFamily: 'var(--font-mono)', fontSize: '0.5rem', color: 'var(--accent-cyan)', letterSpacing: '0.08em' }}>
-            → OA LINK
-          </a>
-        )}
-      </div>
-    </div>
-  );
-}
 
 export default function PipelinePage() {
-  const [jobs, setJobs]       = useState<Job[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [jobs, setJobs] = useState<KanbanJob[]>(INITIAL_JOBS);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingJob, setEditingJob] = useState<KanbanJob | null>(null);
 
-  useEffect(() => {
-    fetch('/api/jobs').then(r => r.json())
-      .then(d => { setJobs(d.jobs ?? []); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, []);
+  // Form State for Add / Edit Modal
+  const [newCompany, setNewCompany] = useState('');
+  const [newRole, setNewRole] = useState('');
+  const [newStatus, setNewStatus] = useState<KanbanStatus>('APPLIED');
+  const [newDueDate, setNewDueDate] = useState('');
+  const [newOaLink, setNewOaLink] = useState('');
+  const [newPlatform, setNewPlatform] = useState('LinkedIn');
+  const [newLocation, setNewLocation] = useState('Remote');
+  const [newNotes, setNewNotes] = useState('');
 
-  const handleDragStart = (e: React.DragEvent, jobId: string) => {
-    e.dataTransfer.setData('jobId', jobId);
+  const handleMoveStatus = (jobId: string, targetStatus: KanbanStatus) => {
+    setJobs((prev) =>
+      prev.map((job) => (job.id === jobId ? { ...job, status: targetStatus } : job))
+    );
   };
 
-  const handleDrop = async (e: React.DragEvent, targetStatus: string) => {
-    e.preventDefault();
-    const jobId = e.dataTransfer.getData('jobId');
-    if (!jobId) return;
-
-    // Find the job to ensure it's not already in the target column
-    const job = jobs.find(j => j.id === jobId);
-    if (!job || job.status === targetStatus) return;
-
-    // Optimistically update UI
-    setJobs(prev => prev.map(j => j.id === jobId ? { ...j, status: targetStatus } : j));
-
-    // Update backend (Notion)
-    try {
-      const res = await fetch('/api/jobs/update', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: jobId, status: targetStatus })
-      });
-      if (!res.ok) {
-        // Revert on failure (simple reload for now or real revert logic)
-        console.error('Failed to update Notion');
-      }
-    } catch (err) {
-      console.error('API Error:', err);
+  const handleDeleteJob = (jobId: string, companyName: string) => {
+    if (confirm(`Are you sure you want to delete "${companyName}" from your pipeline?`)) {
+      setJobs((prev) => prev.filter((j) => j.id !== jobId));
     }
   };
 
-  return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-void)' }}>
-      <div className="aurora-blob aurora-1" /><div className="aurora-blob aurora-2" /><div className="aurora-blob aurora-3" />
-      <Sidebar />
-      <main style={{ marginLeft: 'var(--sidebar-w)', minHeight: '100vh', padding: '28px 28px 28px 32px', position: 'relative', zIndex: 10 }}>
+  const handleOpenAddModal = () => {
+    setEditingJob(null);
+    setNewCompany('');
+    setNewRole('');
+    setNewStatus('APPLIED');
+    setNewDueDate('');
+    setNewOaLink('');
+    setNewPlatform('LinkedIn');
+    setNewLocation('Remote');
+    setNewNotes('');
+    setIsModalOpen(true);
+  };
 
-        {/* System bar */}
-        <div className="system-status-bar">
-          <span style={{ color: 'var(--accent-green)' }}>●</span>
-          <span>Job Board</span>
-          <span className="sep">·</span>
-          <span>Kanban View</span>
+  const handleOpenEditModal = (job: KanbanJob) => {
+    setEditingJob(job);
+    setNewCompany(job.company);
+    setNewRole(job.role);
+    setNewStatus(job.status);
+    setNewDueDate(job.dueDate || '');
+    setNewOaLink(job.oaLink || '');
+    setNewPlatform(job.platform || 'LinkedIn');
+    setNewLocation(job.location || 'Remote');
+    setNewNotes(job.notes || '');
+    setIsModalOpen(true);
+  };
+
+  const handleSaveJob = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCompany || !newRole) return;
+
+    if (editingJob) {
+      // Edit existing
+      setJobs((prev) =>
+        prev.map((j) =>
+          j.id === editingJob.id
+            ? {
+                ...j,
+                company: newCompany,
+                role: newRole,
+                status: newStatus,
+                dueDate: newDueDate || undefined,
+                oaLink: newOaLink || undefined,
+                platform: newPlatform,
+                location: newLocation,
+                notes: newNotes || undefined
+              }
+            : j
+        )
+      );
+    } else {
+      // Add new
+      const created: KanbanJob = {
+        id: `k-${Date.now()}`,
+        company: newCompany,
+        role: newRole,
+        status: newStatus,
+        platform: newPlatform,
+        appliedDate: 'Today',
+        matchScore: 85 + Math.floor(Math.random() * 12),
+        location: newLocation,
+        dueDate: newDueDate || undefined,
+        oaLink: newOaLink || undefined,
+        notes: newNotes || undefined
+      };
+      setJobs((prev) => [created, ...prev]);
+    }
+
+    setIsModalOpen(false);
+  };
+
+  return (
+    <div style={{ minHeight: '100vh', background: 'var(--bg-obsidian)', color: 'var(--text-primary)' }}>
+      <Sidebar />
+
+      <main className="workspace">
+        {/* Header Kicker */}
+        <div className="page-kicker">
+          <Briefcase size={14} />
+          CAREER EXECUTION PIPELINE
         </div>
 
-        {/* Hero */}
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} style={{ marginBottom: 28 }}>
-          <h1 className="hero-title" style={{ fontSize: 'clamp(3rem, 6vw, 5.2rem)' }}>
-            JOB
-            <span style={{ color: 'var(--accent-cyan)', display: 'block', textShadow: '0 0 40px rgba(0,200,255,0.35)' }}>BOARD.</span>
-          </h1>
-        </motion.div>
-
-        {loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '100px 0', gap: 14 }}>
-            <div style={{ width: 28, height: 28, border: '2px solid rgba(0,255,136,0.2)', borderTopColor: 'var(--accent-green)', borderRadius: '50%', animation: 'spin 0.9s linear infinite' }} />
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: 'var(--text-dim)', letterSpacing: '0.18em' }}>LOADING PIPELINE...</span>
+        <div className="page-heading" style={{ marginBottom: '20px' }}>
+          <div>
+            <h1 style={{ fontSize: '2.2rem', fontWeight: 800, fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>
+              Career Execution Pipeline
+            </h1>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '4px' }}>
+              Applied • Replied • Assignment / Test • Interview • Selected / Job Offer Given • Rejected
+            </p>
           </div>
-        ) : (
-          <div className="kanban-board">
-            {COLUMNS.map((col, ci) => {
-              const colJobs = jobs.filter(j => j.status === col.key);
-              return (
-                <motion.div key={col.key}
-                  initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: ci * 0.05 }}
-                  style={{ minWidth: 220, maxWidth: 240, flex: '0 0 220px', minHeight: '60vh' }}
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={(e) => handleDrop(e, col.key)}
-                >
-                  {/* Column header */}
-                  <div style={{ marginBottom: 10 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                      <span style={{
-                        fontFamily: 'var(--font-display)', fontSize: '0.7rem', fontWeight: 700,
-                        letterSpacing: '0.15em', color: col.color,
-                        textShadow: `0 0 10px ${col.color}44`,
-                      }}>
-                        {col.label}
-                      </span>
-                      <span style={{
-                        fontFamily: 'var(--font-mono)', fontSize: '0.58rem',
-                        color: col.color, background: `${col.color}12`,
-                        border: `1px solid ${col.border}`, padding: '1px 8px', borderRadius: 3,
-                      }}>
-                        {String(colJobs.length).padStart(2, '0')}
-                      </span>
-                    </div>
-                    <div style={{ height: 1, background: `linear-gradient(90deg, ${col.color}, transparent)`, opacity: 0.4 }} />
-                  </div>
+          <button className="primary-button" onClick={handleOpenAddModal}>
+            <Plus size={16} /> Add Application / Task
+          </button>
+        </div>
 
-                  {/* Cards */}
-                  <AnimatePresence>
-                    {colJobs.length === 0 ? (
-                      <div style={{
-                        height: 60, border: `1px dashed ${col.color}18`, borderRadius: 4,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontFamily: 'var(--font-mono)', fontSize: '0.5rem', color: 'var(--text-dim)', letterSpacing: '0.1em',
-                      }}>EMPTY</div>
-                    ) : colJobs.map((job, i) => (
-                      <motion.div key={job.id}
+        {/* Pro Tip Banner */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            background: 'rgba(59, 130, 246, 0.08)',
+            border: '1px solid rgba(59, 130, 246, 0.25)',
+            borderRadius: '10px',
+            padding: '10px 16px',
+            fontSize: '0.8rem',
+            fontFamily: 'var(--font-mono)',
+            color: '#93c5fd',
+            marginBottom: '24px'
+          }}
+        >
+          <Sparkles size={16} style={{ color: 'var(--accent-cyan)', flexShrink: 0 }} />
+          <span>
+            <strong>Pro Tip:</strong> Double-click / double-tap any card to edit details or rename task. Use the move stage dropdown or trash icon to manage applications.
+          </span>
+        </div>
+
+        {/* Board Overview Metrics Strip */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+            gap: '12px',
+            marginBottom: '28px'
+          }}
+        >
+          {COLUMNS.map((col) => {
+            const count = jobs.filter((j) => j.status === col.id).length;
+            return (
+              <div
+                key={col.id}
+                style={{
+                  background: 'var(--bg-surface-1)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: '12px',
+                  padding: '14px 16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  boxShadow: 'var(--shadow-sm)'
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: '0.68rem', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.04em' }}>
+                    {col.label}
+                  </div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 800, color: col.color, fontFamily: 'var(--font-display)', marginTop: '2px' }}>
+                    {count}
+                  </div>
+                </div>
+                <span
+                  style={{
+                    width: '10px',
+                    height: '10px',
+                    borderRadius: '50%',
+                    background: col.color,
+                    boxShadow: `0 0 12px ${col.color}`
+                  }}
+                />
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Horizontal Kanban Columns Grid */}
+        <div
+          className="kanban-board"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(6, minmax(320px, 1fr))',
+            gap: '18px',
+            overflowX: 'auto',
+            paddingBottom: '32px'
+          }}
+        >
+          {COLUMNS.map((col) => {
+            const colJobs = jobs.filter((j) => j.status === col.id);
+            return (
+              <div
+                key={col.id}
+                style={{
+                  background: 'var(--bg-surface-1)',
+                  borderRadius: '16px',
+                  border: '1px solid var(--border-subtle)',
+                  padding: '18px',
+                  minHeight: '620px',
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}
+              >
+                {/* Column Header */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    paddingBottom: '14px',
+                    borderBottom: '1px solid var(--border-subtle)',
+                    marginBottom: '16px'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span
+                      style={{
+                        width: '9px',
+                        height: '9px',
+                        borderRadius: '50%',
+                        background: col.color,
+                        boxShadow: `0 0 8px ${col.color}`
+                      }}
+                    />
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '0.78rem',
+                        fontWeight: 800,
+                        color: 'var(--text-primary)',
+                        letterSpacing: '0.04em'
+                      }}
+                    >
+                      {col.label}
+                    </span>
+                  </div>
+                  <span
+                    style={{
+                      fontSize: '0.72rem',
+                      fontFamily: 'var(--font-mono)',
+                      padding: '3px 9px',
+                      borderRadius: '999px',
+                      background: col.bgBadge,
+                      color: col.color,
+                      border: `1px solid ${col.borderBadge}`,
+                      fontWeight: 700
+                    }}
+                  >
+                    {colJobs.length}
+                  </span>
+                </div>
+
+                {/* Cards Container */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', flex: 1 }}>
+                  {colJobs.length === 0 ? (
+                    <div
+                      style={{
+                        height: '140px',
+                        borderRadius: '12px',
+                        border: '1px dashed var(--border-subtle)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--text-muted)',
+                        fontSize: '0.76rem',
+                        fontFamily: 'var(--font-mono)'
+                      }}
+                    >
+                      No items in {col.label}
+                    </div>
+                  ) : (
+                    colJobs.map((job) => (
+                      <motion.div
+                        key={job.id}
+                        layout
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: ci * 0.05 + i * 0.04 }}
-                        layoutId={job.id}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        whileHover={{ y: -3, transition: { duration: 0.15 } }}
+                        onDoubleClick={() => handleOpenEditModal(job)}
+                        title="Double-click to edit or rename"
+                        style={{
+                          padding: '16px',
+                          borderRadius: '12px',
+                          background: 'var(--bg-surface-2)',
+                          border: '1px solid var(--border-subtle)',
+                          boxShadow: 'var(--shadow-md)',
+                          cursor: 'pointer',
+                          position: 'relative'
+                        }}
                       >
-                        <KanbanCard job={job} colColor={col.color} onDragStart={(e) => handleDragStart(e, job.id)} />
+                        {/* Top Card Header with Actions */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                          <strong style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', paddingRight: '8px' }}>
+                            {job.company}
+                          </strong>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span
+                              style={{
+                                fontFamily: 'var(--font-mono)',
+                                fontSize: '0.62rem',
+                                fontWeight: 800,
+                                color: 'var(--accent-cobalt)',
+                                background: 'rgba(59, 130, 246, 0.12)',
+                                border: '1px solid rgba(59, 130, 246, 0.3)',
+                                padding: '2px 6px',
+                                borderRadius: '4px'
+                              }}
+                            >
+                              {job.matchScore}% FIT
+                            </span>
+
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenEditModal(job);
+                              }}
+                              title="Edit / Rename Task"
+                              style={{
+                                background: 'transparent',
+                                border: 'none',
+                                color: 'var(--text-muted)',
+                                cursor: 'pointer',
+                                padding: '4px',
+                                borderRadius: '4px',
+                                display: 'flex',
+                                alignItems: 'center'
+                              }}
+                            >
+                              <Edit3 size={14} />
+                            </button>
+
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteJob(job.id, job.company);
+                              }}
+                              title="Delete Task / Application"
+                              style={{
+                                background: 'transparent',
+                                border: 'none',
+                                color: '#f87171',
+                                cursor: 'pointer',
+                                padding: '4px',
+                                borderRadius: '4px',
+                                display: 'flex',
+                                alignItems: 'center'
+                              }}
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '12px' }}>
+                          {job.role}
+                        </div>
+
+                        {/* Task / Assignment Due Date Badge */}
+                        {job.dueDate && (
+                          <div
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              fontFamily: 'var(--font-mono)',
+                              fontSize: '0.72rem',
+                              fontWeight: 700,
+                              padding: '5px 10px',
+                              borderRadius: '6px',
+                              background:
+                                job.status === 'ASSIGNMENT_TEST'
+                                  ? 'rgba(251, 191, 36, 0.16)'
+                                  : job.status === 'SELECTED_OFFER'
+                                  ? 'rgba(52, 211, 153, 0.16)'
+                                  : 'rgba(96, 165, 250, 0.16)',
+                              color:
+                                job.status === 'ASSIGNMENT_TEST'
+                                  ? '#fde68a'
+                                  : job.status === 'SELECTED_OFFER'
+                                  ? '#a7f3d0'
+                                  : '#bfdbfe',
+                              border: `1px solid ${
+                                job.status === 'ASSIGNMENT_TEST'
+                                  ? 'rgba(251, 191, 36, 0.4)'
+                                  : job.status === 'SELECTED_OFFER'
+                                  ? 'rgba(52, 211, 153, 0.4)'
+                                  : 'rgba(96, 165, 250, 0.4)'
+                              }`,
+                              marginBottom: '12px',
+                              width: '100%'
+                            }}
+                          >
+                            <Clock size={13} /> Due: {job.dueDate}
+                          </div>
+                        )}
+
+                        {/* Online Assessment / Test Link */}
+                        {job.oaLink && (
+                          <a
+                            href={job.oaLink}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              fontSize: '0.74rem',
+                              fontFamily: 'var(--font-mono)',
+                              fontWeight: 700,
+                              color: 'var(--accent-cyan)',
+                              background: 'rgba(6, 182, 212, 0.12)',
+                              border: '1px solid rgba(6, 182, 212, 0.35)',
+                              padding: '6px 12px',
+                              borderRadius: '6px',
+                              marginBottom: '12px',
+                              textDecoration: 'none',
+                              width: '100%',
+                              justifyContent: 'center'
+                            }}
+                          >
+                            <FileCode size={13} /> Open Assignment Test <ExternalLink size={11} />
+                          </a>
+                        )}
+
+                        {job.notes && (
+                          <div
+                            style={{
+                              fontSize: '0.76rem',
+                              color: 'var(--text-muted)',
+                              fontStyle: 'italic',
+                              marginBottom: '12px',
+                              lineHeight: '1.45'
+                            }}
+                          >
+                            "{job.notes}"
+                          </div>
+                        )}
+
+                        {/* Quick Status Stage Switcher */}
+                        <div
+                          style={{
+                            marginTop: '8px',
+                            paddingTop: '12px',
+                            borderTop: '1px solid var(--border-subtle)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '6px'
+                          }}
+                        >
+                          <div style={{ fontSize: '0.65rem', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            Move Stage:
+                          </div>
+                          <select
+                            value={job.status}
+                            onChange={(e) => {
+                              e.stopPropagation();
+                              handleMoveStatus(job.id, e.target.value as KanbanStatus);
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                            style={{
+                              background: 'var(--bg-surface-1)',
+                              color: 'var(--text-primary)',
+                              border: '1px solid var(--border-subtle)',
+                              borderRadius: '6px',
+                              padding: '5px 8px',
+                              fontSize: '0.74rem',
+                              fontFamily: 'var(--font-mono)',
+                              outline: 'none',
+                              cursor: 'pointer',
+                              width: '100%'
+                            }}
+                          >
+                            {COLUMNS.map((c) => (
+                              <option key={c.id} value={c.id}>
+                                {c.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            fontSize: '0.68rem',
+                            color: 'var(--text-muted)',
+                            marginTop: '12px',
+                            fontFamily: 'var(--font-mono)'
+                          }}
+                        >
+                          <span>{job.platform}</span>
+                          <span>{job.appliedDate}</span>
+                        </div>
                       </motion.div>
-                    ))}
-                  </AnimatePresence>
-                </motion.div>
-              );
-            })}
-          </div>
-        )}
+                    ))
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Modal for Adding or Editing Application / Task */}
+        <AnimatePresence>
+          {isModalOpen && (
+            <div
+              style={{
+                position: 'fixed',
+                inset: 0,
+                background: 'rgba(0, 0, 0, 0.75)',
+                backdropFilter: 'blur(8px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 9999,
+                padding: '20px'
+              }}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                style={{
+                  background: 'var(--bg-surface-1)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: '16px',
+                  width: '100%',
+                  maxWidth: '520px',
+                  padding: '28px',
+                  boxShadow: 'var(--shadow-lg)'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, fontFamily: 'var(--font-display)' }}>
+                    {editingJob ? 'Edit & Rename Task / Application' : 'Add Pipeline Application / Task'}
+                  </h3>
+                  <button
+                    onClick={() => setIsModalOpen(false)}
+                    style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+
+                <form onSubmit={handleSaveJob} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontFamily: 'var(--font-mono)', marginBottom: '6px', color: 'var(--text-secondary)' }}>
+                      Company / Task Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. OpenAI, Stripe, Google, My Custom Task"
+                      value={newCompany}
+                      onChange={(e) => setNewCompany(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 14px',
+                        background: 'var(--bg-surface-2)',
+                        border: '1px solid var(--border-subtle)',
+                        borderRadius: '8px',
+                        color: 'var(--text-primary)',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontFamily: 'var(--font-mono)', marginBottom: '6px', color: 'var(--text-secondary)' }}>
+                      Role Title / Description *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Senior Frontend Engineer"
+                      value={newRole}
+                      onChange={(e) => setNewRole(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 14px',
+                        background: 'var(--bg-surface-2)',
+                        border: '1px solid var(--border-subtle)',
+                        borderRadius: '8px',
+                        color: 'var(--text-primary)',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.78rem', fontFamily: 'var(--font-mono)', marginBottom: '6px', color: 'var(--text-secondary)' }}>
+                        Column Stage
+                      </label>
+                      <select
+                        value={newStatus}
+                        onChange={(e) => setNewStatus(e.target.value as KanbanStatus)}
+                        style={{
+                          width: '100%',
+                          padding: '10px 14px',
+                          background: 'var(--bg-surface-2)',
+                          border: '1px solid var(--border-subtle)',
+                          borderRadius: '8px',
+                          color: 'var(--text-primary)',
+                          outline: 'none'
+                        }}
+                      >
+                        {COLUMNS.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.78rem', fontFamily: 'var(--font-mono)', marginBottom: '6px', color: 'var(--text-secondary)' }}>
+                        Platform / Channel
+                      </label>
+                      <input
+                        type="text"
+                        value={newPlatform}
+                        onChange={(e) => setNewPlatform(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '10px 14px',
+                          background: 'var(--bg-surface-2)',
+                          border: '1px solid var(--border-subtle)',
+                          borderRadius: '8px',
+                          color: 'var(--text-primary)',
+                          outline: 'none'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontFamily: 'var(--font-mono)', marginBottom: '6px', color: 'var(--text-secondary)' }}>
+                      Task / Assignment Due Date (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Sept 20, 2026 • 5:00 PM IST"
+                      value={newDueDate}
+                      onChange={(e) => setNewDueDate(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 14px',
+                        background: 'var(--bg-surface-2)',
+                        border: '1px solid var(--border-subtle)',
+                        borderRadius: '8px',
+                        color: 'var(--text-primary)',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontFamily: 'var(--font-mono)', marginBottom: '6px', color: 'var(--text-secondary)' }}>
+                      Assignment / Test Link (Optional)
+                    </label>
+                    <input
+                      type="url"
+                      placeholder="https://hackerrank.com/test-id"
+                      value={newOaLink}
+                      onChange={(e) => setNewOaLink(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 14px',
+                        background: 'var(--bg-surface-2)',
+                        border: '1px solid var(--border-subtle)',
+                        borderRadius: '8px',
+                        color: 'var(--text-primary)',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontFamily: 'var(--font-mono)', marginBottom: '6px', color: 'var(--text-secondary)' }}>
+                      Notes / Remarks (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Recruiter phone screening scheduled"
+                      value={newNotes}
+                      onChange={(e) => setNewNotes(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 14px',
+                        background: 'var(--bg-surface-2)',
+                        border: '1px solid var(--border-subtle)',
+                        borderRadius: '8px',
+                        color: 'var(--text-primary)',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '12px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setIsModalOpen(false)}
+                      style={{
+                        padding: '10px 16px',
+                        background: 'transparent',
+                        border: '1px solid var(--border-subtle)',
+                        borderRadius: '8px',
+                        color: 'var(--text-secondary)',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Cancel
+                    </button>
+                    <button type="submit" className="primary-button">
+                      {editingJob ? 'Save Changes' : 'Add to Pipeline'}
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </main>
     </div>
   );
