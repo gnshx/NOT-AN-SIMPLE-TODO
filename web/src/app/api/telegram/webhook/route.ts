@@ -1,6 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import { Client } from '@notionhq/client';
+import { handleApiError } from '@/lib/errors';
+
+const TelegramUpdateSchema = z.object({
+  update_id: z.number().optional(),
+  message: z.object({
+    message_id: z.number().optional(),
+    chat: z.object({
+      id: z.number()
+    }),
+    text: z.string().optional()
+  }).optional()
+}).passthrough();
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY });
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
@@ -44,7 +57,8 @@ async function findJobByCompany(companyName: string) {
 
 export async function POST(req: Request) {
   try {
-    const update = await req.json();
+    const rawBody = await req.json().catch(() => null);
+    const update = TelegramUpdateSchema.parse(rawBody);
     
     // Ignore edits or non-messages
     if (!update.message || !update.message.text) {
@@ -102,7 +116,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error('Telegram Webhook Error:', err);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    return handleApiError(err);
   }
 }
