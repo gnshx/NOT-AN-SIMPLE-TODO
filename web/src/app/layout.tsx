@@ -1,15 +1,17 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import CommandPalette from '@/components/CommandPalette';
 
 export const metadata: Metadata = {
-  title: 'DayNight Pilot | Productivity & Job Tracker',
-  description: 'Your personal command center for tasks, schedule, and job applications. Day planner, Kanban board, Gmail AI intelligence, and Telegram notifications.',
+  title: 'DayNight Pilot — AI Career Operations Platform',
+  description: 'An intelligent operating system that turns fragmented career, application, and work signals into actions, decisions, and measurable outcomes.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body style={{ background: 'var(--bg-void)', overflowX: 'hidden' }}>
+        <CommandPalette />
         {children}
       </body>
     </html>
