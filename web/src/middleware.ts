@@ -30,9 +30,28 @@ export function middleware(request: NextRequest) {
   }
 
   // 2. Production Security Headers Enforcement
+  //
+  // P0-04: 'unsafe-eval' removed from script-src.
+  //   - 'unsafe-eval' allows arbitrary eval() execution — high XSS risk.
+  //   - 'unsafe-inline' is still present because Next.js App Router injects
+  //     inline <style> tags for CSS-in-JS. Phase 2 will replace this with a
+  //     nonce-based CSP using Next.js middleware nonce generation.
+  //   - object-src 'none' blocks Flash/plugins.
+  //   - base-uri 'self' prevents base-tag hijacking.
+  //   - connect-src 'self' restricts fetch/XHR to same origin.
   response.headers.set(
     'Content-Security-Policy',
-    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data: https:; frame-ancestors 'none';"
+    [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: https:",
+      "font-src 'self' data: https:",
+      "connect-src 'self'",
+      "frame-ancestors 'none'",
+      "object-src 'none'",
+      "base-uri 'self'"
+    ].join('; ')
   );
   response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
   response.headers.set('X-Content-Type-Options', 'nosniff');
@@ -40,6 +59,7 @@ export function middleware(request: NextRequest) {
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
   response.headers.set('X-XSS-Protection', '1; mode=block');
+  response.headers.set('X-DNS-Prefetch-Control', 'off');
 
   return response;
 }
