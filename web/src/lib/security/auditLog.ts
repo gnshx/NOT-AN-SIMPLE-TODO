@@ -24,9 +24,41 @@ export interface ChainableAuditEvent extends AuditEventPayload {
   eventHash: string;
 }
 
-// In-memory store for the latest event hash per workspace
-const workspaceLastHashStore = new Map<string, string>();
 const GENESIS_HASH = '0000000000000000000000000000000000000000000000000000000000000000';
+
+/**
+ * P0-05: Hash chain state is now persisted to the database.
+ *
+ * BEFORE: workspaceLastHashStore was an in-memory Map — the chain was
+ * completely reset (broken) on every application restart or deployment.
+ *
+ * NOW: We query the most recent AuditLog row for the workspace to get the
+ * last eventHash, making the chain survive restarts and horizontal scaling.
+ *
+ * The hash is stored inside the `details` JSON field of the AuditLog row
+ * (which already exists in the schema), so no schema migration is needed
+ * for Phase 0. Phase 1 will add a dedicated `chainHash` column.
+ */
+async function getLastEventHash(workspaceId: string): Promise<string> {
+  if (!prisma) return GENESIS_HASH;
+
+  try {
+    const lastEvent = await prisma.auditLog.findFirst({
+      where: { workspaceId },
+      orderBy: { createdAt: 'desc' },
+      select: { details: true }
+    });
+
+    if (!lastEvent?.details) return GENESIS_HASH;
+
+    const parsed = JSON.parse(lastEvent.details as string);
+    return parsed?.eventHash || GENESIS_HASH;
+  } catch {
+    // If parse fails, start a new chain segment — log but don't crash
+    console.error('[AuditLog] Failed to read last event hash — starting new chain segment.');
+    return GENESIS_HASH;
+  }
+}
 
 function hashString(val: string): string {
   return crypto.createHash('sha256').update(val || '').digest('hex');
@@ -50,12 +82,14 @@ export function computeEventHash(
 
 /**
  * Records a tamper-evident audit event bound to a SHA-256 cryptographic hash chain.
+ * The previousEventHash is fetched from the database — not from an in-memory store.
  */
 export async function logAuditEvent(payload: AuditEventPayload): Promise<ChainableAuditEvent> {
   const eventId = `evt-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
   const timestamp = new Date().toISOString();
 
-  const previousEventHash = workspaceLastHashStore.get(payload.workspaceId) || GENESIS_HASH;
+  // P0-05: Read previous hash from DB, not from volatile in-memory Map
+  const previousEventHash = await getLastEventHash(payload.workspaceId);
 
   const eventHash = computeEventHash(
     eventId,
@@ -66,8 +100,6 @@ export async function logAuditEvent(payload: AuditEventPayload): Promise<Chainab
     payload.result,
     previousEventHash
   );
-
-  workspaceLastHashStore.set(payload.workspaceId, eventHash);
 
   const ipHash = hashString(payload.ipAddress || '127.0.0.1');
   const userAgentHash = hashString(payload.userAgent || 'Unknown');
@@ -82,32 +114,36 @@ export async function logAuditEvent(payload: AuditEventPayload): Promise<Chainab
     eventHash
   };
 
-  // Persist to Prisma AuditLog model
+  // Persist to Prisma AuditLog model — eventHash stored in details for chain continuity
   try {
-    await prisma.auditLog.create({
-      data: {
-        id: eventId,
-        workspaceId: payload.workspaceId,
-        userId: payload.actorId,
-        action: payload.action,
-        entityType: payload.resourceType,
-        entityId: payload.resourceId || null,
-        details: JSON.stringify({
-          result: payload.result,
-          risk: payload.risk,
-          previousEventHash,
-          eventHash,
-          ipHash,
-          userAgentHash,
-          requestId: payload.requestId || null,
-          details: payload.details || {}
-        }),
-        ipAddress: payload.ipAddress || null,
-        createdAt: new Date(timestamp)
-      }
-    });
+    if (prisma) {
+      await prisma.auditLog.create({
+        data: {
+          id: eventId,
+          workspaceId: payload.workspaceId,
+          userId: payload.actorId,
+          action: payload.action,
+          entityType: payload.resourceType,
+          entityId: payload.resourceId || null,
+          details: JSON.stringify({
+            result: payload.result,
+            risk: payload.risk,
+            // P0-05: eventHash persisted so getLastEventHash() can rebuild chain
+            previousEventHash,
+            eventHash,
+            ipHash,
+            userAgentHash,
+            requestId: payload.requestId || null,
+            details: payload.details || {}
+          }),
+          ipAddress: payload.ipAddress || null,
+          createdAt: new Date(timestamp)
+        }
+      });
+    }
   } catch (err) {
-    // Audit logging fallbacks
+    // Audit logging must never crash the main request — but we log the failure
+    console.error('[AuditLog] Failed to persist audit event to database:', err);
   }
 
   return auditEvent;
