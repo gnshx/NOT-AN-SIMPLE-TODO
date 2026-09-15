@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 model Organization {
@@ -13,11 +13,8 @@ model Organization {
   slug        String       @unique
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
-  deletedAt   DateTime?
   workspaces  Workspace[]
   memberships Membership[]
-
-  @@index([deletedAt])
 }
 
 model Workspace {
@@ -29,7 +26,6 @@ model Workspace {
   isDefault      Boolean            @default(false)
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
-  deletedAt      DateTime?
   applications   Application[]
   opportunities  JobOpportunity[]
   resumes        ResumeVersion[]
@@ -38,8 +34,6 @@ model Workspace {
   aiActions      AiAction[]
   aiMemories     AiMemory[]
   auditLogs      AuditLog[]
-
-  @@index([organizationId, deletedAt])
 }
 
 model User {
@@ -49,7 +43,6 @@ model User {
   avatarUrl   String?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
-  deletedAt   DateTime?
   memberships Membership[]
   tasks       Task[]       @relation("AssignedTasks")
   auditLogs   AuditLog[]
@@ -63,11 +56,8 @@ model Membership {
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   role           String       @default("MEMBER")
   createdAt      DateTime     @default(now())
-  deletedAt      DateTime?
 
   @@unique([userId, organizationId])
-  @@index([organizationId])
-  @@index([userId])
 }
 
 model Company {
@@ -79,7 +69,6 @@ model Company {
   trustScore    Float            @default(90.0)
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
-  deletedAt     DateTime?
   applications  Application[]
   opportunities JobOpportunity[]
 }
@@ -106,14 +95,9 @@ model Application {
   matchScore      Float              @default(85.0)
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
-  deletedAt       DateTime?
   timeline        TimelineEvent[]
   interviews      InterviewSession[]
   aiActions       AiAction[]
-
-  @@index([workspaceId, deletedAt])
-  @@index([companyId])
-  @@index([status])
 }
 
 model TimelineEvent {
@@ -125,36 +109,29 @@ model TimelineEvent {
   date          DateTime    @default(now())
   eventType     String
   source        String      @default("Gmail AI")
-  deletedAt     DateTime?
-
-  @@index([applicationId])
 }
 
 model JobOpportunity {
-  id              String    @id @default(uuid())
+  id              String   @id @default(uuid())
   workspaceId     String
   workspace       Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   companyId       String
-  company         Company   @relation(fields: [companyId], references: [id])
+  company         Company  @relation(fields: [companyId], references: [id])
   role            String
-  platform        String    @default("LinkedIn")
+  platform        String   @default("LinkedIn")
   jobUrl          String?
-  location        String?   @default("Remote")
+  location        String?  @default("Remote")
   salaryRange     String?
-  skillMatch      Float     @default(88.0)
-  experienceMatch Float     @default(85.0)
-  locationMatch   Float     @default(100.0)
-  salaryMatch     Float     @default(80.0)
-  overallScore    Float     @default(88.0)
-  scamRisk        String    @default("LOW")
+  skillMatch      Float    @default(88.0)
+  experienceMatch Float    @default(85.0)
+  locationMatch   Float    @default(100.0)
+  salaryMatch     Float    @default(80.0)
+  overallScore    Float    @default(88.0)
+  scamRisk        String   @default("LOW")
   description     String?
   missingSkills   String?
   matchedSkills   String?
-  createdAt       DateTime  @default(now())
-  deletedAt       DateTime?
-
-  @@index([workspaceId, deletedAt])
-  @@index([companyId])
+  createdAt       DateTime @default(now())
 }
 
 model ResumeVersion {
@@ -171,10 +148,7 @@ model ResumeVersion {
   bulletPoints  String
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
-  deletedAt     DateTime?
   applications  Application[]
-
-  @@index([workspaceId, deletedAt])
 }
 
 model InterviewSession {
@@ -191,11 +165,7 @@ model InterviewSession {
   prepSheet      String?
   status         String          @default("SCHEDULED")
   createdAt      DateTime        @default(now())
-  deletedAt      DateTime?
   mockInterviews MockInterview[]
-
-  @@index([workspaceId, deletedAt])
-  @@index([applicationId])
 }
 
 model MockInterview {
@@ -213,9 +183,6 @@ model MockInterview {
   overallScore       Float             @default(80.0)
   improvementPlan    String?
   createdAt          DateTime          @default(now())
-  deletedAt          DateTime?
-
-  @@index([interviewSessionId])
 }
 
 model Task {
@@ -234,10 +201,6 @@ model Task {
   category       String    @default("General")
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
-  deletedAt      DateTime?
-
-  @@index([workspaceId, deletedAt])
-  @@index([assigneeId])
 }
 
 model AiAction {
@@ -257,42 +220,33 @@ model AiAction {
   status        String       @default("PENDING")
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
-  deletedAt     DateTime?
-
-  @@index([workspaceId, deletedAt])
-  @@index([applicationId])
 }
 
 model AiMemory {
-  id          String    @id @default(uuid())
+  id          String   @id @default(uuid())
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   category    String
   key         String
   value       String
-  confidence  Float     @default(95.0)
-  source      String    @default("User Input")
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  deletedAt   DateTime?
+  confidence  Float    @default(95.0)
+  source      String   @default("User Input")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@unique([workspaceId, category, key])
-  @@index([workspaceId, deletedAt])
 }
 
 model AuditLog {
-  id          String    @id @default(uuid())
+  id          String   @id @default(uuid())
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   userId      String?
-  user        User?     @relation(fields: [userId], references: [id])
+  user        User?    @relation(fields: [userId], references: [id])
   action      String
   entityType  String
   entityId    String?
   details     String?
   ipAddress   String?
-  createdAt   DateTime  @default(now())
-
-  @@index([workspaceId, createdAt])
-  @@index([userId])
+  createdAt   DateTime @default(now())
 }

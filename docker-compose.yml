@@ -1,4 +1,36 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: daynightpilot-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-daynight}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-daynight_secure_pass_2026}
+      POSTGRES_DB: ${POSTGRES_DB:-daynightpilot}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-daynight} -d ${POSTGRES_DB:-daynightpilot}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: daynightpilot-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   web:
     build:
       context: ./web
@@ -8,9 +40,23 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       NODE_ENV: production
       NEXT_TELEMETRY_DISABLED: "1"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-daynight}:${POSTGRES_PASSWORD:-daynight_secure_pass_2026}@postgres:5432/${POSTGRES_DB:-daynightpilot}?schema=public
+      REDIS_URL: redis://redis:6379
+      AUTH_SECRET: ${AUTH_SECRET:-change_this_secret_in_production_with_openssl_rand_hex_32}
+      ENCRYPTION_MASTER_KEY: ${ENCRYPTION_MASTER_KEY:-change_this_secret_in_production_with_openssl_rand_hex_32}
       NOTION_API_KEY: ${NOTION_API_KEY:-}
       NOTION_DATABASE_ID: ${NOTION_DATABASE_ID:-}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+
+volumes:
+  postgres_data:
+  redis_data:
