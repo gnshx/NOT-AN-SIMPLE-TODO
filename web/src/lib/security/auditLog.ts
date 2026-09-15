@@ -203,3 +203,47 @@ export function detectSuspiciousActivity(events: AuditEventPayload[]): { suspici
     alerts
   };
 }
+
+/**
+ * Retrieves and maps chronological audit log events for a workspace.
+ */
+export async function getAuditLogsForWorkspace(workspaceId: string): Promise<ChainableAuditEvent[]> {
+  if (!prisma) return [];
+
+  try {
+    const records = await prisma.auditLog.findMany({
+      where: { workspaceId },
+      orderBy: { createdAt: 'asc' }
+    });
+
+    return records.map((record: any) => {
+      let parsedDetails: any = {};
+      try {
+        parsedDetails = record.details ? JSON.parse(record.details as string) : {};
+      } catch {
+        parsedDetails = {};
+      }
+
+      return {
+        workspaceId: record.workspaceId,
+        actorId: record.userId,
+        action: record.action,
+        resourceType: record.entityType,
+        resourceId: record.entityId || undefined,
+        result: parsedDetails.result || 'ALLOWED',
+        risk: parsedDetails.risk || 'LOW',
+        ipAddress: record.ipAddress || undefined,
+        requestId: parsedDetails.requestId,
+        eventId: record.id,
+        timestamp: record.createdAt.toISOString(),
+        ipHash: parsedDetails.ipHash || '',
+        userAgentHash: parsedDetails.userAgentHash || '',
+        previousEventHash: parsedDetails.previousEventHash || GENESIS_HASH,
+        eventHash: parsedDetails.eventHash || ''
+      };
+    });
+  } catch (err) {
+    console.error('[AuditLog] Failed to fetch workspace audit logs:', err);
+    return [];
+  }
+}

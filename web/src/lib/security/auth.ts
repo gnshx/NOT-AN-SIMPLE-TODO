@@ -19,6 +19,7 @@ export interface UserSession {
   name: string;
   workspaceId: string;
   organizationId: string;
+  role?: string;
   expiresAt: Date;
   isRevoked: boolean;
 }

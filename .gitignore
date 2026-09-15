@@ -23,6 +23,7 @@ playwright-report/
 logs/
 data/
 backups/
+compliance/evidence/
 
 # IDE
 .vscode/
