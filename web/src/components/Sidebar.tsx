@@ -18,7 +18,9 @@ import {
   ShieldCheck,
   Zap,
   Menu,
-  X
+  X,
+  Sun,
+  Moon
 } from 'lucide-react';
 
 export default function Sidebar() {
@@ -26,6 +28,22 @@ export default function Sidebar() {
   const [workspace, setWorkspace] = useState('Personal Workspace');
   const [wsOpen, setWsOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+  // Initialize theme from localStorage or default to light mode
+  useEffect(() => {
+    const saved = localStorage.getItem('theme') as 'light' | 'dark' | null;
+    const initialTheme = saved || 'light';
+    setTheme(initialTheme);
+    document.documentElement.setAttribute('data-theme', initialTheme);
+  }, []);
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(nextTheme);
+    localStorage.setItem('theme', nextTheme);
+    document.documentElement.setAttribute('data-theme', nextTheme);
+  };
 
   // Close mobile drawer on route change
   useEffect(() => {
@@ -64,22 +82,42 @@ export default function Sidebar() {
             DayNight Pilot
           </span>
         </div>
-        <button
-          onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label="Toggle Navigation Drawer"
-          style={{
-            padding: '6px',
-            borderRadius: '6px',
-            background: 'var(--bg-surface-2)',
-            border: '1px solid var(--border-subtle)',
-            color: 'var(--text-primary)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-        >
-          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button
+            onClick={toggleTheme}
+            aria-label="Toggle Theme Mode"
+            style={{
+              padding: '6px 10px',
+              borderRadius: '6px',
+              background: 'var(--bg-surface-2)',
+              border: '1px solid var(--border-subtle)',
+              color: 'var(--text-primary)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '0.75rem',
+              fontWeight: 600
+            }}
+          >
+            {theme === 'light' ? <Sun size={15} style={{ color: 'var(--accent-amber)' }} /> : <Moon size={15} style={{ color: 'var(--accent-cobalt)' }} />}
+          </button>
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle Navigation Drawer"
+            style={{
+              padding: '6px',
+              borderRadius: '6px',
+              background: 'var(--bg-surface-2)',
+              border: '1px solid var(--border-subtle)',
+              color: 'var(--text-primary)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
       </header>
 
       {/* Mobile Backdrop Overlay */}
@@ -103,8 +141,51 @@ export default function Sidebar() {
             </div>
           </div>
 
+          {/* Theme Mode Toggle Button */}
+          <button
+            onClick={toggleTheme}
+            aria-label="Toggle Theme Mode"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '8px 12px',
+              borderRadius: 'var(--radius-sm)',
+              border: '1px solid var(--border-subtle)',
+              background: 'var(--bg-surface-2)',
+              color: 'var(--text-primary)',
+              fontSize: '0.76rem',
+              fontWeight: 700,
+              width: '100%',
+              marginBottom: '10px',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {theme === 'light' ? (
+                <Sun size={15} style={{ color: 'var(--accent-amber)' }} />
+              ) : (
+                <Moon size={15} style={{ color: 'var(--accent-cobalt)' }} />
+              )}
+              <span>{theme === 'light' ? 'White / Light Mode' : 'Obsidian Dark Mode'}</span>
+            </span>
+            <span
+              style={{
+                fontSize: '0.64rem',
+                fontFamily: 'var(--font-mono)',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                background: 'var(--bg-surface-1)',
+                color: 'var(--text-muted)',
+                border: '1px solid var(--border-subtle)'
+              }}
+            >
+              TOGGLE
+            </span>
+          </button>
+
           {/* Workspace selector dropdown */}
-          <div style={{ position: 'relative', marginTop: '6px' }}>
+          <div style={{ position: 'relative' }}>
             <button
               onClick={() => setWsOpen(!wsOpen)}
               style={{
@@ -138,7 +219,7 @@ export default function Sidebar() {
                   background: 'var(--bg-surface-1)',
                   border: '1px solid var(--border-dim)',
                   borderRadius: '8px',
-                  boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+                  boxShadow: 'var(--shadow-lg)',
                   zIndex: 100,
                   padding: '4px'
                 }}
@@ -158,7 +239,7 @@ export default function Sidebar() {
                       fontSize: '0.72rem',
                       fontWeight: workspace === w ? 700 : 500,
                       color: workspace === w ? 'var(--accent-cobalt)' : 'var(--text-secondary)',
-                      background: workspace === w ? 'rgba(59, 130, 246, 0.15)' : 'transparent'
+                      background: workspace === w ? 'rgba(59, 130, 246, 0.12)' : 'transparent'
                     }}
                   >
                     {w}
@@ -183,10 +264,10 @@ export default function Sidebar() {
             padding: '8px 12px',
             borderRadius: 'var(--radius-sm)',
             border: '1px solid var(--border-glow)',
-            background: 'rgba(59, 130, 246, 0.1)',
-            color: '#93c5fd',
+            background: 'rgba(37, 99, 235, 0.08)',
+            color: 'var(--accent-cobalt)',
             fontSize: '0.74rem',
-            fontWeight: 600,
+            fontWeight: 700,
             marginBottom: '16px'
           }}
         >
