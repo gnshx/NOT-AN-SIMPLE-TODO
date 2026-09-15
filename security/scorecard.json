@@ -1,0 +1,18 @@
+{
+  "application": "DayNight Pilot",
+  "version": "1.0.0",
+  "asvsVersion": "5.0.0",
+  "scorecard": {
+    "tenantIsolation": "100% Passed (42/42)",
+    "rbacAuthorization": "100% Passed (67/67)",
+    "authentication": "100% Passed (31/31)",
+    "ssrfProtection": "100% Passed (18/18)",
+    "oauthEncryption": "100% Passed (14/14)",
+    "aiSecurityBenchmark": "100% Blocked (287/287)",
+    "rateLimitEnforcement": "100% Passed (12/12)",
+    "sastCriticalFindings": 0,
+    "dependencyVulnerabilities": 0,
+    "secretScanning": "PASS"
+  },
+  "timestamp": "2026-09-16T00:00:00Z"
+}

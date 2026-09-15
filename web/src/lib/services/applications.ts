@@ -1,4 +1,11 @@
+/**
+ * P0-02: Applications service — BOLA hardened.
+ * Every query is bound to session.workspaceId resolved server-side from an authenticated session.
+ * Callers MUST provide a UserSession, never a raw workspaceId from client input.
+ */
+
 import { prisma } from '../db';
+import type { UserSession } from '../security/auth';
 
 export interface ApplicationRecord {
   id: string;
@@ -17,11 +24,24 @@ export interface ApplicationRecord {
   matchScore: number;
 }
 
+/**
+ * Returns applications strictly scoped to the authenticated user's workspace.
+ * workspaceId is resolved from the server-validated session — NEVER from client input.
+ */
 export async function getApplicationsByWorkspace(
-  workspaceId: string = 'ws-default-1'
+  session: UserSession
 ): Promise<ApplicationRecord[]> {
+  if (!session || !session.workspaceId || !session.userId) {
+    throw new Error('Unauthorized: Valid authenticated session required.');
+  }
+
+  const { workspaceId } = session;
+
   if (!prisma) {
-    // Return structured default data if database is initializing
+    // Return structured default data if database is initializing (dev only)
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('Database client unavailable in production.');
+    }
     return [
       {
         id: 'app-google-1',
@@ -68,6 +88,7 @@ export async function getApplicationsByWorkspace(
 
   try {
     const records = await prisma.application.findMany({
+      // workspaceId comes from session — never from client-provided input
       where: { workspaceId },
       include: { company: true },
       orderBy: { appliedDate: 'desc' }
