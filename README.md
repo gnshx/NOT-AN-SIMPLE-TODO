@@ -11,7 +11,7 @@
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![Gemini AI](https://img.shields.io/badge/Gemini_AI-2.5_Flash-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://deepmind.google/technologies/gemini/)
 [![OWASP ASVS](https://img.shields.io/badge/Security-OWASP_ASVS_5.0.0_Aligned-009688?style=for-the-badge)](https://owasp.org/www-project-application-security-verification-standard/)
-[![Prompt Injection Defense](https://img.shields.io/badge/AI_Security-100%25_Benchmark_Defended-purple?style=for-the-badge)](security/ai-security.md)
+[![Prompt Injection Defense](https://img.shields.io/badge/AI_Security-50_Case_Benchmark_Active-purple?style=for-the-badge)](security/ai-security.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
 
 </div>
@@ -95,17 +95,22 @@ DayNight Pilot enforces security controls at every layer of the execution lifecy
 
 ---
 
-## 📊 Security Scorecard & Benchmark Metrics
+## 📊 Security Controls & Benchmark Metrics
 
-| Metric Category | Target | Verified Performance | Status |
-| :--- | :---: | :---: | :---: |
-| **Tenant Isolation Tests** | 100% | 100% Passed (0 Cross-Tenant Leakage) | ✅ Verified |
-| **RBAC Authorization Tests** | 100% | 100% Passed (Role Capabilities Enforced) | ✅ Verified |
-| **Prompt Injection Defense** | >95% | 100% Prevention Rate across 50-Case Benchmark | ✅ Verified |
-| **SSRF Protection Rate** | 100% | 100% Blocked (Loopback, Private & Cloud Metadata) | ✅ Verified |
-| **Rate Limit Enforcement** | HTTP 429 | 100% Enforced with `Retry-After` Headers | ✅ Verified |
-| **OAuth Token Encryption** | AES-256-GCM | 100% Encrypted at Rest | ✅ Verified |
-| **Audit Hash Chain Integrity** | Tamper-Evident | SHA-256 Chain Verification Active | ✅ Verified |
+> Evidence is generated from automated tests. Claims reflect actual implementation, not aspirational targets.
+> Last verified: 2026-09-16 · Branch: main
+
+| Metric Category | Control Implemented | Status | Notes |
+| :--- | :--- | :---: | :--- |
+| **Tenant Isolation** | Scoped DB layer enforces `workspaceId` on every query | ✅ Implemented | Cross-tenant tests in `tests/security/tenancy/` |
+| **RBAC Authorization** | 5-role capability matrix, server-side permission checks | ✅ Implemented | Zero frontend-only role checks |
+| **Prompt Injection Defense** | 15-category pattern detection, 50-case benchmark | ✅ Implemented | Rate: measured by `runPromptInjectionBenchmark()` |
+| **SSRF Protection** | Private IP + cloud metadata endpoint blocking | ✅ Implemented | Loopback, RFC-1918, 169.254.x.x blocked |
+| **Rate Limiting** | IP-based, 6 endpoint classes, HTTP 429 + Retry-After | ✅ Implemented | In-memory (Phase 1 upgrades to Redis) |
+| **OAuth Token Encryption** | AES-256-GCM envelope encryption | ✅ Implemented | Fail-fast if ENCRYPTION_MASTER_KEY not set in prod |
+| **Audit Hash Chain** | SHA-256 chain persisted to database | ✅ Implemented | Chain survives restarts as of P0-05 |
+| **Authentication** | Session validation + expiry + revocation | ⚠️ Partial | In-memory store — Phase 1 adds NextAuth.js |
+| **Real AI Provider** | Gemini/OpenAI gateway with budget controls | 🔲 Phase 3 | Currently uses mock responses |
 
 Detailed security specifications and threat models are documented in the `/security` directory:
 - [System Threat Model](web/security/threat-model.md)
