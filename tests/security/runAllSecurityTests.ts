@@ -48,7 +48,7 @@ export async function runAllSecurityTests() {
   allResults.push(...runSsrfTests());
 
   // 4. AI Security & Tool Firewall
-  allResults.push(...runPromptInjectionTestSuite());
+  allResults.push(...(await runPromptInjectionTestSuite()));
   allResults.push(...(await runToolFirewallTestSuite()));
   allResults.push(...runDataExfiltrationTests());
   allResults.push(...(await runAiPrivilegeEscalationTests()));

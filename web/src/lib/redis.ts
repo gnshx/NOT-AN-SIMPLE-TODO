@@ -63,3 +63,28 @@ export function getRedisClient(): Redis | null {
 export function isRedisConnected(): boolean {
   return isConnected && redisClient !== null && redisClient.status === 'ready';
 }
+
+/**
+ * Returns connection configuration tailored for BullMQ workers and queues.
+ * BullMQ requires maxRetriesPerRequest: null.
+ */
+export function getBullMQConnectionOptions() {
+  const redisUrl = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
+  try {
+    const parsed = new URL(redisUrl);
+    return {
+      host: parsed.hostname || '127.0.0.1',
+      port: Number(parsed.port) || 6379,
+      password: parsed.password || undefined,
+      maxRetriesPerRequest: null,
+      enableReadyCheck: false
+    };
+  } catch (e) {
+    return {
+      host: '127.0.0.1',
+      port: 6379,
+      maxRetriesPerRequest: null,
+      enableReadyCheck: false
+    };
+  }
+}
