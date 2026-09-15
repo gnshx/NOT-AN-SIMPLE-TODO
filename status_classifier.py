@@ -72,10 +72,18 @@ def _init_gemini_clients():
             logger.warning("No valid Gemini API keys configured.")
             return
             
-        from google import genai
+        try:
+            from google import genai
+        except ImportError:
+            import google.generativeai as genai
+
         for idx, key in enumerate(keys):
             try:
-                client = genai.Client(api_key=key)
+                if hasattr(genai, "Client"):
+                    client = genai.Client(api_key=key)
+                else:
+                    genai.configure(api_key=key)
+                    client = genai
                 _gemini_clients.append(client)
             except Exception as exc:
                 logger.warning("Failed to initialize Gemini client for key #%d: %s", idx + 1, exc)

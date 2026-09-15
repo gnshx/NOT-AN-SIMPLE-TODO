@@ -4,6 +4,7 @@ credentials.json
 token.json
 
 # Python
+venv/
 .venv/
 __pycache__/
 *.py[cod]
@@ -11,6 +12,12 @@ __pycache__/
 dist/
 build/
 .eggs/
+
+# Node & Next.js
+node_modules/
+.next/
+test-results/
+playwright-report/
 
 # Logs & data
 logs/

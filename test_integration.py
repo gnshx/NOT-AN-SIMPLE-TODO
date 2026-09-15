@@ -42,9 +42,13 @@ def _check_imports():
 test("All required packages importable", _check_imports)
 
 def _check_gemini_import():
-    import google.genai
-    return True
-test("google.genai importable", _check_gemini_import)
+    try:
+        import google.genai
+        return True
+    except ImportError:
+        import google.generativeai
+        return True
+test("google.genai / google.generativeai importable", _check_gemini_import)
 
 # ── 2. Config ─────────────────────────────────────────────────────────────
 print("\n[2] Config & Environment")
