@@ -1,0 +1,14 @@
+[allowlist]
+description = "Allowlist for test fixtures, mocks, and documentation examples"
+paths = [
+  '''tests/.*''',
+  '''web/tests/.*''',
+  '''\.env\.example''',
+  '''security/.*''',
+  '''README\.md'''
+]
+regexes = [
+  '''dummy_ephemeral_test_secret_purged''',
+  '''mock-test-key.*''',
+  '''test_token_.*'''
+]
