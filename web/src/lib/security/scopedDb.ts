@@ -365,7 +365,7 @@ export class ScopedDb {
 
   // ── AI MEMORY (P1-04) ───────────────────────────────────────────────────────
 
-  async getAiMemories(permission: Permission = 'view_applications') {
+  async getAiMemories(category?: string, permission: Permission = 'view_applications') {
     const auth = await requireWorkspaceResource({
       userId: this.userId,
       workspaceId: this.workspaceId,
@@ -376,7 +376,11 @@ export class ScopedDb {
 
     const db = this.checkDb();
     return db.aiMemory.findMany({
-      where: { workspaceId: this.workspaceId, deletedAt: null },
+      where: {
+        workspaceId: this.workspaceId,
+        ...(category ? { category } : {}),
+        deletedAt: null
+      },
       orderBy: { updatedAt: 'desc' }
     });
   }
