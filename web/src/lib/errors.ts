@@ -143,7 +143,12 @@ export function handleApiError(error: unknown) {
   }
 
   // 4. Unexpected server error — log internally with requestId, send safe generic message
-  console.error(`[ApiError:${requestId}] Unexpected internal error:`, error);
+  try {
+    const { createRequestLogger } = require('./logger');
+    createRequestLogger({ requestId }).error({ err: error }, 'Unexpected internal API error');
+  } catch (e) {
+    console.error(`[ApiError:${requestId}] Unexpected internal error:`, error);
+  }
 
   const isProduction = process.env.NODE_ENV === 'production';
   return NextResponse.json(
