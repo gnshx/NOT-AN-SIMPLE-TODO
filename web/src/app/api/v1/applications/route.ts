@@ -85,44 +85,58 @@ export async function POST(request: Request) {
     const body = await request.json().catch(() => null);
     const validatedData = CreateApplicationSchema.parse(body);
 
-    const scopedDb = new ScopedDb(session.userId, session.workspaceId);
-    let created;
-    try {
-      created = await scopedDb.createApplication({
-        roleTitle: validatedData.role,
-        status: validatedData.status,
-        platform: validatedData.platform,
-        appliedDate: validatedData.appliedDate ? new Date(validatedData.appliedDate) : new Date(),
-        notes: validatedData.notes || null,
-        company: {
-          connectOrCreate: {
-            where: { name: validatedData.company },
-            create: { name: validatedData.company }
-          }
-        }
-      });
-    } catch (dbErr) {
-      // Graceful fallback for local development without DB
-      created = {
-        id: `app-local-${Date.now()}`,
-        workspaceId: session.workspaceId,
-        role: validatedData.role,
-        company: validatedData.company,
-        status: validatedData.status,
-        platform: validatedData.platform,
-        appliedDate: validatedData.appliedDate || new Date().toISOString(),
-        notes: validatedData.notes
-      };
-    }
+    const idempotencyKey = request.headers.get('idempotency-key') || request.headers.get('x-idempotency-key');
+    const { withIdempotency } = await import('@/lib/security/idempotency');
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: created,
-        message: 'Application recorded successfully.'
-      },
-      { status: 201 }
+    const result = await withIdempotency(
+      session.workspaceId,
+      idempotencyKey,
+      async () => {
+        const scopedDb = new ScopedDb(session.userId, session.workspaceId);
+        let created;
+        try {
+          created = await scopedDb.createApplication({
+            roleTitle: validatedData.role,
+            status: validatedData.status,
+            platform: validatedData.platform,
+            appliedDate: validatedData.appliedDate ? new Date(validatedData.appliedDate) : new Date(),
+            notes: validatedData.notes || null,
+            company: {
+              connectOrCreate: {
+                where: { name: validatedData.company },
+                create: { name: validatedData.company }
+              }
+            }
+          });
+        } catch (dbErr) {
+          created = {
+            id: `app-local-${Date.now()}`,
+            workspaceId: session.workspaceId,
+            role: validatedData.role,
+            company: validatedData.company,
+            status: validatedData.status,
+            platform: validatedData.platform,
+            appliedDate: validatedData.appliedDate || new Date().toISOString(),
+            notes: validatedData.notes
+          };
+        }
+
+        return {
+          statusCode: 201,
+          body: {
+            success: true,
+            data: created,
+            message: 'Application recorded successfully.'
+          }
+        };
+      }
     );
+
+    const response = NextResponse.json(result.body, { status: result.statusCode });
+    if (result.isReplay) {
+      response.headers.set('Idempotent-Replay', 'true');
+    }
+    return response;
   } catch (error) {
     return handleApiError(error);
   }
