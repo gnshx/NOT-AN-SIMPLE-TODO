@@ -36,6 +36,8 @@ export interface AuthResult {
  * Strictly prevents Broken Object Level Authorization (BOLA) and Broken Function Level Authorization (BFLA).
  */
 export async function resolveAuthContext(userId: string, workspaceId: string): Promise<AuthContext | null> {
+  if (!prisma) return null;
+
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
     select: { id: true, organizationId: true }
@@ -113,6 +115,7 @@ async function checkResourceBelongsToWorkspace(
   resourceId: string,
   workspaceId: string
 ): Promise<boolean> {
+  if (!prisma) return false;
   try {
     switch (resource) {
       case 'application': {

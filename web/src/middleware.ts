@@ -4,7 +4,7 @@ import { checkRateLimit } from '@/lib/security/rateLimiter';
 
 export function middleware(request: NextRequest) {
   const response = NextResponse.next();
-  const ip = request.ip || request.headers.get('x-forwarded-for') || '127.0.0.1';
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() || request.headers.get('x-real-ip') || '127.0.0.1';
 
   // 1. Rate Limiting Check on API Routes
   if (request.nextUrl.pathname.startsWith('/api/')) {

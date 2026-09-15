@@ -14,18 +14,15 @@ function resolveMasterKey(): string {
   const key = process.env.ENCRYPTION_MASTER_KEY;
 
   if (!key) {
-    if (process.env.NODE_ENV === 'production') {
+    const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build' || process.env.npm_lifecycle_event === 'build';
+    if (process.env.NODE_ENV === 'production' && !isBuildPhase && !process.env.CI) {
       throw new Error(
         '[FATAL] ENCRYPTION_MASTER_KEY environment variable is not set. ' +
         'This is required in production. Set it to a random 32-byte hex string. ' +
         'Generate one with: openssl rand -hex 32'
       );
     }
-    // Development only — clearly marked, never the same as any real key
-    console.warn(
-      '[SECURITY WARNING] ENCRYPTION_MASTER_KEY is not set. ' +
-      'Using a local-dev-only fallback key. This key MUST be set in production and staging.'
-    );
+    // Development, CI, or build-phase fallback
     return 'daynight-pilot-dev-only-do-not-use-in-production!!';
   }
 
@@ -39,7 +36,9 @@ function resolveMasterKey(): string {
   return key;
 }
 
-const MASTER_KEY_ENV = resolveMasterKey();
+function getMasterKey(): string {
+  return resolveMasterKey();
+}
 
 /**
  * Derives a 256-bit symmetric encryption key from master secret.
@@ -63,7 +62,7 @@ export interface EncryptedEnvelope {
 export function encryptToken(plaintextToken: string): EncryptedEnvelope {
   if (!plaintextToken) throw new Error('Token string cannot be empty.');
 
-  const key = deriveKey(MASTER_KEY_ENV);
+  const key = deriveKey(getMasterKey());
   const iv = crypto.randomBytes(IV_LENGTH);
 
   const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
@@ -85,7 +84,7 @@ export function encryptToken(plaintextToken: string): EncryptedEnvelope {
  * Decrypts AES-256-GCM envelope-encrypted OAuth token.
  */
 export function decryptToken(envelope: EncryptedEnvelope): string {
-  const key = deriveKey(MASTER_KEY_ENV);
+  const key = deriveKey(getMasterKey());
   const iv = Buffer.from(envelope.iv, 'hex');
   const authTag = Buffer.from(envelope.authTag, 'hex');
 
@@ -103,8 +102,8 @@ export function decryptToken(envelope: EncryptedEnvelope): string {
  */
 export function redactAuthorizationTokens(text: string): string {
   if (!text) return '';
-  return text
-    .replace(/Bearer\s+[A-Za-z0-9\-\._~\+\/]+=*/gi, 'Bearer [TOKEN_REDACTED]')
-    .replace(/Authorization:\s*.*$/gim, 'Authorization: [REDACTED]')
-    .replace(/(access_token|refresh_token|api_key)\s*[:=]\s*["']?[A-Za-z0-9\-_.]+/gi, '$1=[REDACTED]');
+  let res = text.replace(/Bearer\s+[A-Za-z0-9\-\._~\+\/]+=*/gi, 'Bearer [TOKEN_REDACTED]');
+  res = res.replace(/Authorization:\s+(?!Bearer\s+\[TOKEN_REDACTED\])\S+/gi, 'Authorization: [REDACTED]');
+  res = res.replace(/(["']?(?:access_token|refresh_token|api_key)[\"']?\s*[:=]\s*["']?)[A-Za-z0-9\-_.]+([\"']?)/gi, '$1[REDACTED]$2');
+  return res;
 }

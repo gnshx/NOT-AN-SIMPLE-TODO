@@ -11,6 +11,12 @@ jobs:
     name: Run Security Test Harness & Audit Controls
     runs-on: ubuntu-latest
 
+    env:
+      NODE_ENV: test
+      ENCRYPTION_MASTER_KEY: "dummy_ephemeral_test_secret_purged"
+      AUTH_SECRET: "dummy_ephemeral_test_secret_purged"
+      NEXTAUTH_SECRET: "dummy_ephemeral_test_secret_purged"
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -34,7 +40,8 @@ jobs:
 
       - name: Execute Automated Security Verification Suite
         run: |
-          npx ts-node --compiler-options '{"module":"CommonJS"}' tests/security/runAllSecurityTests.ts
+          cd web
+          npm run test:security
 
       - name: Upload Security Scorecard Artifact
         uses: actions/upload-artifact@v4

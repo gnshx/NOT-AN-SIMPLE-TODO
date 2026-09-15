@@ -74,9 +74,28 @@ export async function runAllSecurityTests() {
   console.log(`SECURITY VERIFICATION SCORE: ${Math.round((passed / allResults.length) * 100)}% Verified Alignment.`);
   console.log('====================================================\n');
 
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const scorecardPath = path.resolve(__dirname, '../../security/scorecard.json');
+    if (fs.existsSync(scorecardPath)) {
+      const data = JSON.parse(fs.readFileSync(scorecardPath, 'utf8'));
+      data.timestamp = new Date().toISOString();
+      data.scorecard = data.scorecard || {};
+      data.scorecard.lastRunScore = `${Math.round((passed / allResults.length) * 100)}% (${passed}/${allResults.length})`;
+      fs.writeFileSync(scorecardPath, JSON.stringify(data, null, 2));
+    }
+  } catch (e) {
+    // Non-fatal if scorecard write fails
+  }
+
   return { passed, failed, total: allResults.length };
 }
 
-if (require.main === module) {
-  runAllSecurityTests();
+if (require.main === module || (typeof process !== 'undefined' && process.argv[1]?.includes('runAllSecurityTests'))) {
+  runAllSecurityTests().then(({ failed }) => {
+    if (failed > 0) {
+      process.exit(1);
+    }
+  });
 }

@@ -54,13 +54,18 @@ const ATTACK_PATTERNS: Array<{ category: PromptInjectionCategory; pattern: RegEx
     reason: 'Persona override / Jailbreak attempt detected.'
   },
   {
+    category: 'PI-003',
+    pattern: /(note to ai|ai directive|instruction for ai|system directive|assistant directive)\s*:/i,
+    reason: 'Indirect prompt injection in document detected.'
+  },
+  {
     category: 'PI-007',
-    pattern: /(print|show|output|reveal|display|repeat)\s+(your\s+)?(system\s+prompt|developer\s+instructions|hidden\s+text|initial\s+prompt)/i,
+    pattern: /(print|show|output|reveal|display|repeat)\s+(your\s+)?(complete\s+|entire\s+)?(system\s+prompt|developer\s+instructions|hidden\s+text|initial\s+prompt)/i,
     reason: 'System prompt extraction attack detected.'
   },
   {
     category: 'PI-008',
-    pattern: /(send|transmit|post|fetch|exfiltrate)\s+.*(token|key|api_key|password|secret|credential|auth)\s+to/i,
+    pattern: /(send|transmit|post|fetch|exfiltrate)\s+.*(token|key|api_key|password|secret|credential|auth|resume|candidate)\s+to/i,
     reason: 'Credential exfiltration payload detected.'
   },
   {
