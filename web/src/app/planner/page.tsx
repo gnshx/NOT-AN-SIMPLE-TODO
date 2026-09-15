@@ -1,88 +1,114 @@
 'use client';
-
-import { FormEvent, useEffect, useMemo, useState } from 'react';
-import { Check, Clock3, Plus } from 'lucide-react';
+import { useState } from 'react';
 import Sidebar from '@/components/Sidebar';
-import { createTask, loadTasks, saveTasks, TASKS_CHANGED, Task, TaskPriority, today } from '@/lib/tasks';
+import { motion } from 'framer-motion';
+import {
+  Calendar,
+  Clock,
+  Plus,
+  Zap,
+  CheckCircle2,
+  Sparkles
+} from 'lucide-react';
 
-const hours = Array.from({ length: 13 }, (_, index) => index + 8);
-
-function formatHour(hour: number) {
-  return new Intl.DateTimeFormat(undefined, { hour: 'numeric' }).format(new Date(2026, 0, 1, hour));
+interface HourlySlot {
+  time: string;
+  taskTitle?: string;
+  category?: string;
+  priority?: 'HIGH' | 'MEDIUM' | 'LOW';
+  completed?: boolean;
 }
 
+const INITIAL_TIMELINE: HourlySlot[] = [
+  { time: '08:00 AM', taskTitle: 'Morning Inbox Scan & Gmail AI Classification', category: 'Email', priority: 'LOW', completed: true },
+  { time: '09:00 AM', taskTitle: 'Google Concurrency & System Design STAR Prep', category: 'Interview Prep', priority: 'HIGH', completed: true },
+  { time: '10:00 AM', taskTitle: 'Draft & Send Follow-up to Stripe Recruiter Sarah', category: 'Communication', priority: 'HIGH', completed: false },
+  { time: '11:00 AM', taskTitle: 'Submit Tailored Resume for Acme Corp Full Stack Role', category: 'Application', priority: 'MEDIUM', completed: false },
+  { time: '12:00 PM' },
+  { time: '01:00 PM', taskTitle: 'Distributed Systems Portfolio Feature Engineering', category: 'Project', priority: 'MEDIUM', completed: false },
+  { time: '02:00 PM' },
+  { time: '03:00 PM', taskTitle: 'Review Glassdoor Technical Question Sheets', category: 'Research', priority: 'LOW', completed: false },
+  { time: '04:00 PM' },
+  { time: '05:00 PM', taskTitle: 'Daily Career Velocity & Analytics Sync', category: 'Analytics', priority: 'LOW', completed: false }
+];
+
 export default function PlannerPage() {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [selectedDate, setSelectedDate] = useState(today());
-  const [title, setTitle] = useState('');
-  const [time, setTime] = useState('09:00');
-  const [priority, setPriority] = useState<TaskPriority>('Medium');
-
-  useEffect(() => {
-    const sync = () => setTasks(loadTasks());
-    const timer = window.setTimeout(sync, 0);
-    window.addEventListener(TASKS_CHANGED, sync);
-    return () => {
-      window.clearTimeout(timer);
-      window.removeEventListener(TASKS_CHANGED, sync);
-    };
-  }, []);
-
-  const dayTasks = useMemo(
-    () => tasks.filter((task) => task.date === selectedDate).sort((a, b) => a.time.localeCompare(b.time)),
-    [tasks, selectedDate],
-  );
-  const completed = dayTasks.filter((task) => task.completed).length;
-
-  const update = (next: Task[]) => {
-    setTasks(next);
-    saveTasks(next);
-  };
-
-  const addTask = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const trimmed = title.trim();
-    if (!trimmed) return;
-    update([...tasks, createTask({ title: trimmed, date: selectedDate, time, priority })]);
-    setTitle('');
-  };
+  const [slots, setSlots] = useState<HourlySlot[]>(INITIAL_TIMELINE);
 
   return (
-    <div className="app-page">
+    <div style={{ minHeight: '100vh', background: 'var(--bg-obsidian)' }}>
       <Sidebar />
+
       <main className="workspace">
-        <div className="page-kicker"><Clock3 size={15} /> Time-blocked schedule</div>
-        <div className="page-heading">
-          <div><h1>Day planner</h1><p>Put your work on a timeline and focus on the next block.</p></div>
-          <label className="date-picker">Plan for<input type="date" value={selectedDate} onChange={(event) => setSelectedDate(event.target.value)} /></label>
+        <div className="page-kicker">
+          <Calendar size={14} />
+          TIME-BLOCKED DAILY PLANNER
         </div>
 
-        <div className="planner-summary"><strong>{completed}/{dayTasks.length}</strong> tasks completed <span aria-hidden="true">•</span> {selectedDate === today() ? 'Today' : new Date(`${selectedDate}T00:00:00`).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}</div>
+        <div className="page-heading">
+          <div>
+            <h1>Daily Time-Block Schedule</h1>
+            <p>Hourly breakdown of priority blocks, study windows, and career actions.</p>
+          </div>
+          <button className="primary-button">
+            <Zap size={16} /> Auto-Optimize Schedule
+          </button>
+        </div>
 
-        <div className="planner-layout">
-          <section className="timeline" aria-label="Day timeline">
-            {hours.map((hour) => {
-              const blockTasks = dayTasks.filter((task) => Number(task.time.slice(0, 2)) === hour);
-              return <div className="time-slot" key={hour}>
-                <time>{formatHour(hour)}</time>
-                <div className="slot-content">
-                  {blockTasks.map((task) => <button key={task.id} className={`planner-task priority-${task.priority.toLowerCase()} ${task.completed ? 'is-complete' : ''}`} onClick={() => update(tasks.map((item) => item.id === task.id ? { ...item, completed: !item.completed } : item))}>
-                    <span className="planner-check">{task.completed && <Check size={13} />}</span>
-                    <span><strong>{task.title}</strong><small>{task.time} · {task.priority} priority</small></span>
-                  </button>)}
+        {/* Timeline Container */}
+        <div className="glass-card" style={{ padding: '24px', borderRadius: '12px' }}>
+          <div style={{ display: 'grid', gap: '8px' }}>
+            {slots.map((slot, idx) => (
+              <div
+                key={idx}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '100px 1fr',
+                  gap: '16px',
+                  alignItems: 'center',
+                  padding: '12px 14px',
+                  borderRadius: '8px',
+                  background: slot.taskTitle ? 'var(--bg-surface-2)' : 'transparent',
+                  border: slot.taskTitle ? '1px solid var(--border-subtle)' : '1px dashed rgba(255,255,255,0.05)'
+                }}
+              >
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.76rem', color: 'var(--accent-cobalt)', fontWeight: 700 }}>
+                  {slot.time}
                 </div>
-              </div>;
-            })}
-            {dayTasks.filter((task) => !hours.includes(Number(task.time.slice(0, 2)))).map((task) => <div className="unscheduled-task" key={task.id}>{task.time} · {task.title}</div>)}
-          </section>
 
-          <form className="planner-add" onSubmit={addTask}>
-            <h2>Schedule a task</h2>
-            <label>Task<input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="What needs your attention?" /></label>
-            <label>Start time<input type="time" value={time} onChange={(event) => setTime(event.target.value)} /></label>
-            <label>Priority<select value={priority} onChange={(event) => setPriority(event.target.value as TaskPriority)}><option>Low</option><option>Medium</option><option>High</option></select></label>
-            <button className="primary-button" type="submit"><Plus size={17} /> Add to timeline</button>
-          </form>
+                {slot.taskTitle ? (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <strong style={{ fontSize: '0.88rem', color: 'var(--text-primary)', textDecoration: slot.completed ? 'line-through' : 'none' }}>
+                        {slot.taskTitle}
+                      </strong>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                        Category: {slot.category}
+                      </div>
+                    </div>
+
+                    <span
+                      style={{
+                        fontSize: '0.65rem',
+                        fontFamily: 'var(--font-mono)',
+                        fontWeight: 700,
+                        padding: '2px 8px',
+                        borderRadius: '4px',
+                        background: slot.priority === 'HIGH' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(59, 130, 246, 0.15)',
+                        color: slot.priority === 'HIGH' ? '#fca5a5' : '#93c5fd'
+                      }}
+                    >
+                      {slot.priority}
+                    </span>
+                  </div>
+                ) : (
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                    Available Time Window
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </main>
     </div>
