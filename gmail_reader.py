@@ -4,6 +4,8 @@ gmail_reader.py — Gmail API authentication and email fetching.
 First run will open a browser for OAuth consent.
 After that, the token is cached in token.json for silent re-use.
 """
+import os
+import sys
 import base64
 import logging
 import json
@@ -57,6 +59,15 @@ def get_gmail_service():
                     f"Gmail credentials file not found: {config.GMAIL_CREDENTIALS_FILE}\n"
                     "Download it from Google Cloud Console → APIs & Services → Credentials."
                 )
+
+            # Avoid hanging in headless CI runners
+            is_headless = not sys.stdin.isatty() or bool(os.getenv("CI")) or bool(os.getenv("GITHUB_ACTIONS"))
+            if is_headless:
+                raise RuntimeError(
+                    "Interactive OAuth browser flow cannot run in a headless / CI environment (GitHub Actions). "
+                    "Please generate a fresh token locally and set GMAIL_TOKEN_JSON in GitHub Secrets."
+                )
+
             flow = InstalledAppFlow.from_client_secrets_file(
                 str(config.GMAIL_CREDENTIALS_FILE), config.GMAIL_SCOPES
             )
