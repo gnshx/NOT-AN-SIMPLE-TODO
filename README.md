@@ -98,7 +98,7 @@ DayNight Pilot enforces defense-in-depth across client, edge middleware, identit
 
 ## ⚡ Platform Capabilities
 
-### 📬 1. Event-Driven Application Pipeline (`/applications`)
+### 📬 1. Event-Driven Application Pipeline (`/pipeline`)
 - **Zero-Touch Ingestion**: Ingests and parses recruiter communications, interview invites, and status updates directly from connected inboxes.
 - **Bi-Directional Views**: Seamlessly switch between a high-density Kanban board and an analytical data table with instant status filters.
 - **Company Identity Synthesis**: Automatic company avatar generation and domain resolution.

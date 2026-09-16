@@ -9,7 +9,7 @@
  * degrades gracefully to in-memory fallback without crashing the process.
  */
 
-import Redis from 'ioredis';
+import type Redis from 'ioredis';
 
 let redisClient: Redis | null = null;
 let isConnected = false;
@@ -25,7 +25,9 @@ export function getRedisClient(): Redis | null {
   }
 
   try {
-    redisClient = new Redis(redisUrl, {
+    // Dynamically require to avoid pulling Node builtins into Edge bundles
+    const RedisClass = require('ioredis');
+    redisClient = new RedisClass(redisUrl, {
       maxRetriesPerRequest: 2,
       connectTimeout: 3000,
       retryStrategy(times) {

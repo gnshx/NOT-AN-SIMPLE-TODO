@@ -1,15 +1,15 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { checkDistributedRateLimit } from '@/lib/security/rateLimiter';
+import { checkRateLimit } from '@/lib/security/rateLimiter';
 import { applySecurityHeaders } from '@/lib/security/headers';
 
-export async function middleware(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const response = NextResponse.next();
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() || request.headers.get('x-real-ip') || '127.0.0.1';
 
   // 1. Rate Limiting Check on API Routes
   if (request.nextUrl.pathname.startsWith('/api/')) {
-    const rateLimit = await checkDistributedRateLimit('api', ip);
+    const rateLimit = checkRateLimit('api', ip);
     if (rateLimit.limited) {
       return new NextResponse(
         JSON.stringify({
