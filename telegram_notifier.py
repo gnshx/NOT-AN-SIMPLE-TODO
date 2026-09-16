@@ -1,5 +1,11 @@
 """
-telegram_notifier.py — Send job application status alerts via Telegram Bot API.
+telegram_notifier.py — Send real-time job application status alerts via Telegram Bot API.
+
+Features:
+  - Formatted HTML alerts with emoji status highlights.
+  - Risk assessment warnings (red flags, MLM scams, fee deposits).
+  - Inline technical prep sheets for scheduled interviews.
+  - Periodic execution summary cards with counts and metrics.
 """
 import logging
 import requests

@@ -1,15 +1,39 @@
+/**
+ * @file StatCard.tsx
+ * @description High-impact aerospace metric tile with responsive 3D tilt,
+ * glowing bottom horizon line, and oversized display numeral typography.
+ * 
+ * @module components/StatCard
+ */
+
 'use client';
 import { motion } from 'framer-motion';
 import TiltCard from './TiltCard';
 
+/**
+ * Properties for the telemetry stat counter card.
+ */
 interface StatCardProps {
+  /** Upper kicker label (uppercase, monospace tracking) */
   label: string;
+  /** Primary numeric or string metric value */
   value: string | number;
+  /** Optional secondary subtitle or contextual delta (e.g. "+14% this week") */
   sub?: string;
+  /** Primary accent color token for text shadow and border glow (defaults to emerald) */
   accent?: string;
+  /** Stagger animation entrance delay in seconds */
   delay?: number;
 }
 
+/**
+ * StatCard Component
+ * 
+ * Renders an executive KPI metric block with custom hover reactive illumination.
+ * 
+ * @param {StatCardProps} props - Component properties
+ * @returns {JSX.Element} Rendered metric card
+ */
 export default function StatCard({ label, value, sub, accent = 'var(--accent-green)', delay = 0 }: StatCardProps) {
   return (
     <motion.div

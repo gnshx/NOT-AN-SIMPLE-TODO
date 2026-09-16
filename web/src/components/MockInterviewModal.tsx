@@ -1,14 +1,38 @@
+/**
+ * @file MockInterviewModal.tsx
+ * @description Interactive AI technical flight simulator modal.
+ * Simulates real-time technical questions, collects candidate responses,
+ * and provides rubric feedback (STAR structure, conciseness, technical depth).
+ * 
+ * @module components/MockInterviewModal
+ */
+
 'use client';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Video, X, Send, Award, Sparkles, CheckCircle2 } from 'lucide-react';
 
+/**
+ * Props for triggering a company and role-specific interview simulation.
+ */
 interface MockModalProps {
+  /** Target hiring organization (e.g. "Google", "Stripe") */
   companyName: string;
+  /** Role profile being simulated (e.g. "Staff Distributed Systems Engineer") */
   role: string;
+  /** Callback to dismiss modal overlay */
   onClose: () => void;
 }
 
+/**
+ * MockInterviewModal Component
+ * 
+ * Multi-step simulation dialog transitioning from prompt delivery to candidate input
+ * and instant AI rubric evaluation.
+ * 
+ * @param {MockModalProps} props
+ * @returns {JSX.Element} Modal overlay and dialog
+ */
 export default function MockInterviewModal({ companyName, role, onClose }: MockModalProps) {
   const [step, setStep] = useState<'QUESTION' | 'FEEDBACK'>('QUESTION');
   const [answerText, setAnswerText] = useState('');

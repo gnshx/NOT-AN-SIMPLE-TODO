@@ -1,11 +1,29 @@
+/**
+ * @file auth/signin/page.tsx
+ * @description Enterprise authentication and single sign-on (SSO) login view.
+ * Renders OAuth login flows (Google Workspace, SSO) with security disclaimer badges.
+ * 
+ * @module app/auth/signin/page
+ */
+
 'use client';
 
 import { signIn } from 'next-auth/react';
 import { useState } from 'react';
 
+/**
+ * SignInPage Component
+ * 
+ * Provides an enterprise credential gateway with OAuth provider dispatch.
+ * 
+ * @returns {JSX.Element} Login dialog card
+ */
 export default function SignInPage() {
   const [loading, setLoading] = useState(false);
 
+  /**
+   * Initiates Google OAuth2 handshake via NextAuth.
+   */
   const handleGoogleSignIn = async () => {
     setLoading(true);
     await signIn('google', { callbackUrl: '/' });

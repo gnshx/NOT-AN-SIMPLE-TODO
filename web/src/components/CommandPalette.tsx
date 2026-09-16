@@ -1,3 +1,12 @@
+/**
+ * @file CommandPalette.tsx
+ * @description Global spotlight command palette modal (⌘K / Ctrl+K) for DayNight Pilot.
+ * Provides instant keyboard-driven navigation, AI Pilot triggers, and workflow actions.
+ * Features fuzzy filtering, keyboard shortcut hints, and category segregation.
+ * 
+ * @module components/CommandPalette
+ */
+
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -18,15 +27,32 @@ import {
   Zap
 } from 'lucide-react';
 
+/**
+ * Represents a single actionable item in the Command Palette.
+ */
 interface CommandItem {
+  /** Unique identifier for the command item */
   id: string;
+  /** Primary display text */
   label: string;
+  /** Categorical grouping within the palette list */
   category: 'Navigation' | 'AI Pilot Actions' | 'Quick Tools';
+  /** Leading icon rendered next to the command label */
   icon: React.ReactNode;
+  /** Execution callback invoked when the item is activated */
   action: () => void;
+  /** Optional keyboard shortcut label (e.g. "⌘K", "ESC") */
   shortcut?: string;
 }
 
+/**
+ * CommandPalette Component
+ * 
+ * Mounts a global keyboard listener for `Cmd+K` / `Ctrl+K` and renders an
+ * interactive executive command launcher with backdrop blur and animated entry.
+ *
+ * @returns {JSX.Element | null} Animated command launcher modal when active
+ */
 export default function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');

@@ -1,15 +1,46 @@
+/**
+ * @file JobCard.tsx
+ * @description Interactive 3D tilt job application card with scam risk telemetry,
+ * dynamic status indicators, inline interview prep links, and expandable technical notes.
+ * 
+ * @module components/JobCard
+ */
+
 'use client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { Building2, Calendar, Shield, ChevronDown, ExternalLink } from 'lucide-react';
 import TiltCard from './TiltCard';
 
+/**
+ * Career application record data contract.
+ */
 interface Job {
-  id: string; company: string; role: string; status: string;
-  platform: string; date: string; scam_risk?: string;
-  risk_notes?: string; prep_sheet?: string; oa_link?: string;
+  /** Unique job or application ID */
+  id: string;
+  /** Name of employing company */
+  company: string;
+  /** Role title or job description headline */
+  role: string;
+  /** Workflow status (e.g. "Applied", "OA Sent", "Interview Scheduled", "Offer", "Rejected") */
+  status: string;
+  /** Source acquisition channel (e.g. "LinkedIn", "Greenhouse", "Direct") */
+  platform: string;
+  /** Submission or update timestamp */
+  date: string;
+  /** AI scam/phishing risk tier ("Low", "Medium", "High", "Unknown") */
+  scam_risk?: string;
+  /** Detailed automated fraud/verification explanation */
+  risk_notes?: string;
+  /** Markdown or external URL to technical interview preparation notes */
+  prep_sheet?: string;
+  /** Direct link to active online assessment or coding screen */
+  oa_link?: string;
 }
 
+/**
+ * Visual styling and glowing color accents mapped by application pipeline status.
+ */
 const STATUS_CONFIG: Record<string, { badge: string; accent: string; glow: string }> = {
   'Applied':             { badge: 'badge-applied',      accent: 'rgba(180,188,230,0.7)', glow: 'rgba(180,188,230,0.1)' },
   'Under Review':        { badge: 'badge-review',       accent: '#a855f7',               glow: 'rgba(168,85,247,0.15)' },
@@ -20,6 +51,9 @@ const STATUS_CONFIG: Record<string, { badge: string; accent: string; glow: strin
   'Job Opportunity':     { badge: 'badge-opportunity',   accent: '#ff0080',               glow: 'rgba(255,0,128,0.15)'  },
 };
 
+/**
+ * Color styling tokens mapped to AI fraud and scam risk tiers.
+ */
 const RISK_CONFIG: Record<string, { color: string }> = {
   Low:     { color: 'var(--accent-green)'  },
   Medium:  { color: 'var(--accent-orange)' },
@@ -27,6 +61,17 @@ const RISK_CONFIG: Record<string, { color: string }> = {
   Unknown: { color: 'var(--text-dim)'      },
 };
 
+/**
+ * JobCard Component
+ * 
+ * Renders an aerospace-styled application card featuring 3D mouse parallax,
+ * left-accent status line, scam verification indicator, and expandable accordion.
+ * 
+ * @param {object} props
+ * @param {Job} props.job - Application model data
+ * @param {number} props.index - Stagger animation index in list
+ * @returns {JSX.Element} Rendered application card
+ */
 export default function JobCard({ job, index }: { job: Job; index: number }) {
   const [expanded, setExpanded] = useState(false);
   const cfg     = STATUS_CONFIG[job.status] ?? STATUS_CONFIG['Applied'];

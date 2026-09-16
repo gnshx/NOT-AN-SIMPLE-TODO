@@ -1,3 +1,12 @@
+/**
+ * @file hub/page.tsx
+ * @description Central Execution Hub connecting DayNight Pilot functional domains.
+ * Provides high-level operational routing across AI Action Review, Interview Coaching,
+ * Strategic Planning, and Tailored Variant Generation.
+ * 
+ * @module app/hub/page
+ */
+
 'use client';
 import Sidebar from '@/components/Sidebar';
 import { motion } from 'framer-motion';
@@ -13,6 +22,13 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
+/**
+ * HubPage Component
+ * 
+ * Executive navigation portal presenting quick launch cards for core platform operations.
+ * 
+ * @returns {JSX.Element} Central Command Hub interface
+ */
 export default function HubPage() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-obsidian)' }}>

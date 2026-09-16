@@ -1,6 +1,12 @@
 """
 company_researcher.py — Automated research for companies using DuckDuckGo & Gemini.
-Provides Scam Risk Analysis and Interview Prep Cheat Sheets.
+Provides Scam Risk Analysis, Predatory Internship Screening, and Interview Prep Cheat Sheets.
+
+Workflow:
+  1. Performs web search using DuckDuckGo (Reddit, reviews, legitimacy checks).
+  2. If scheduled for interview, queries company tech stack, recent engineering blogs, and Glassdoor questions.
+  3. Synthesizes findings using rotating Gemini models with exponential retry backoff.
+  4. Degrades gracefully to heuristic rule-based pattern matching if offline or rate limited.
 """
 import logging
 import json
@@ -11,7 +17,16 @@ import config
 logger = logging.getLogger(__name__)
 
 def _search_web(query: str, max_results: int = 3) -> str:
-    """Perform a web search and return a concatenated string of results."""
+    """
+    Perform a live web search via DuckDuckGo and return a concatenated summary of results.
+
+    Args:
+        query (str): The search phrase to execute.
+        max_results (int): Maximum count of search hits to fetch. Defaults to 3.
+
+    Returns:
+        str: Formatted markdown string containing titles, snippets, and source URLs.
+    """
     try:
         ddgs = DDGS()
         results = list(ddgs.text(query, max_results=max_results))
@@ -74,9 +89,18 @@ def _heuristic_scam_check(company_name: str, scam_results: str) -> Dict[str, str
 
 def analyze_company(company_name: str, role: str, status: str) -> Dict[str, str]:
     """
-    Research a company.
-    If it's any new application, check for scam/legitimacy risk.
-    If it's an Interview, also generate an interview cheat sheet.
+    Conduct multi-source AI & web intelligence research on a target company.
+
+    Args:
+        company_name (str): Target hiring organization name.
+        role (str): Role designation / job title.
+        status (str): Current pipeline stage (e.g. "Interview Scheduled", "Applied").
+
+    Returns:
+        Dict[str, str]: Dictionary containing:
+            - "scam_risk": Fraud risk rating ('Low', 'Medium', 'High', or 'Unknown').
+            - "risk_notes": Brief analytical summary of fraud indicators or platform repute.
+            - "prep_sheet": Structured technical dossier & interview tips (if interview scheduled).
     """
     if company_name == "Unknown" or company_name.lower() in ("linkedin", "internshala", "unstop"):
         return {"scam_risk": "Unknown", "risk_notes": "", "prep_sheet": ""}

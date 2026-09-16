@@ -1,17 +1,38 @@
+/**
+ * @file aiFirewall.ts
+ * @description OWASP Top 10 for LLM AI Gateway & Tool Execution Firewall.
+ * Regulates agentic tool invocations through 5-tier risk taxonomy (READ_ONLY -> CRITICAL),
+ * RBAC authorization checks, human-in-the-loop gates, step-up MFA challenge requirements,
+ * prompt injection scanning, and parameter sanitization.
+ * 
+ * @module lib/security/aiFirewall
+ */
+
 import { Permission, Role, hasPermission } from './rbac';
 import { detectPromptInjection } from './promptInjection';
 import { redactPII } from './dataClassification';
 
+/** Five-tier operational risk classification for AI tool executions */
 export type ToolRiskLevel = 'READ_ONLY' | 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
+/**
+ * Security metadata definition for an autonomous AI tool invocation.
+ */
 export interface ToolDefinition {
+  /** Canonical tool invocation name */
   name: string;
+  /** Functional description */
   description: string;
+  /** Security risk tier */
   riskLevel: ToolRiskLevel;
+  /** Minimum RBAC permission required for caller */
   requiredPermission: Permission;
+  /** Enforces human operator authorization prior to dispatch */
   requiresHumanApproval: boolean;
+  /** Enforces re-authentication / MFA step-up challenge */
   requiresStepUpAuth: boolean;
-  schema: Record<string, string>; // argument name -> type definition
+  /** Argument schema validation specification */
+  schema: Record<string, string>;
 }
 
 export interface ProposedToolCall {

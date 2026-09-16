@@ -1,13 +1,37 @@
+/**
+ * @file TiltCard.tsx
+ * @description Physics-based 3D card wrapper that calculates cursor proximity
+ * and applies perspective transforms, dynamic radial lighting, and surface elevation.
+ * 
+ * @module components/TiltCard
+ */
+
 'use client';
 import { useRef, useCallback, CSSProperties } from 'react';
 
+/**
+ * Properties for the 3D tilt interaction wrapper.
+ */
 interface TiltCardProps {
+  /** Card body content */
   children: React.ReactNode;
+  /** Custom CSS classes to merge with glassmorphic container */
   className?: string;
+  /** Radial gradient spotlight glow color (CSS color string) */
   glowColor?: string;
+  /** Inline container styles */
   style?: CSSProperties;
 }
 
+/**
+ * TiltCard Component
+ * 
+ * Captures mouse coordinates across the container viewport to compute 3D rotational Euler angles
+ * (pitch & yaw) and projects an organic dynamic specular spotlight.
+ * 
+ * @param {TiltCardProps} props
+ * @returns {JSX.Element} Interactive 3D tiltable glassmorphic container
+ */
 export default function TiltCard({
   children,
   className = '',

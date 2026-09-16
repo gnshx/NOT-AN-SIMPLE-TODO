@@ -1,8 +1,19 @@
+/**
+ * @file auth/error/page.tsx
+ * @description Authentication and single sign-on failure handling view.
+ * Inspects URL query params for OAuth/SSO error flags and displays tailored remediation advice.
+ * 
+ * @module app/auth/error/page
+ */
+
 'use client';
 
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 
+/**
+ * Parses authentication error query parameters and renders a friendly remediation prompt.
+ */
 function ErrorContent() {
   const searchParams = useSearchParams();
   const error = searchParams.get('error');

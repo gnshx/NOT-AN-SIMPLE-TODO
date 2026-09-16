@@ -1,3 +1,12 @@
+/**
+ * @file planner/page.tsx
+ * @description Time-blocked daily calendar planner.
+ * Breaks down high-priority deep work, technical mock sessions, recruiter communications,
+ * and portfolio development into discrete hourly blocks.
+ * 
+ * @module app/planner/page
+ */
+
 'use client';
 import { useState } from 'react';
 import Sidebar from '@/components/Sidebar';
@@ -11,11 +20,19 @@ import {
   Sparkles
 } from 'lucide-react';
 
+/**
+ * Hourly calendar timeslot model.
+ */
 interface HourlySlot {
+  /** Display timestamp label (e.g. "09:00 AM") */
   time: string;
+  /** Scheduled task title */
   taskTitle?: string;
+  /** Category tag (e.g. "Interview Prep", "Communication") */
   category?: string;
+  /** Urgency/priority level */
   priority?: 'HIGH' | 'MEDIUM' | 'LOW';
+  /** Completion flag */
   completed?: boolean;
 }
 
@@ -32,6 +49,13 @@ const INITIAL_TIMELINE: HourlySlot[] = [
   { time: '05:00 PM', taskTitle: 'Daily Career Velocity & Analytics Sync', category: 'Analytics', priority: 'LOW', completed: false }
 ];
 
+/**
+ * PlannerPage Component
+ * 
+ * Interactive calendar view displaying an hourly execution timeline with task status indicators.
+ * 
+ * @returns {JSX.Element} Daily time-blocked planner view
+ */
 export default function PlannerPage() {
   const [slots, setSlots] = useState<HourlySlot[]>(INITIAL_TIMELINE);
 

@@ -1,23 +1,22 @@
 """
 notion_updater.py — Create and update Notion database rows for job applications.
 
-Actual DB schema (verified via API):
+Actual DB schema (verified via Notion API):
   Company          (title)
   Role             (rich_text)
   Platform         (select)   — options: LinkedIn, Email, Internshala, Unstop, etc.
   Applied Date     (date)
-  Status           (select)   — our canonical labels
+  Status           (select)   — our canonical labels (Applied, Under Review, OA Sent, etc.)
   Last Checked     (date)
   Application Link (url)
   Notes            (rich_text) — prefixed with [eid:xxxx] for deduplication
   Resume Version   (rich_text)
 
-Deduplication:
-  Email ID is embedded in Notes as a prefix [eid:<sha1>].
-  We query Notion for that string; if found → update; else → create.
-
-Note: The database returns object type "data_source" in the Notion v3 API.
-      We use client.databases.query() which still works for data_source objects.
+Deduplication Strategy:
+  1. Unique email hash is embedded in the 'Notes' property as a tag: [eid:<sha1>].
+  2. Queries Notion using exact rich_text substring match.
+  3. If found, updates properties and detects status changes.
+  4. If not found, attempts secondary company + role matching before creating a new page.
 """
 import logging
 from typing import Optional

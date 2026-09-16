@@ -1,14 +1,39 @@
+/**
+ * @file ParticleSphere.tsx
+ * @description Fibonacci spiral particle sphere rendered with Three.js Points and WebGL.
+ * Features 3,200+ particle vertex coordinates, continuous rotation, and cursor repulsion physics
+ * that disperses points on proximity and springs back into equilibrium.
+ * 
+ * @module components/ParticleSphere
+ */
+
 'use client';
 import { useRef, useEffect } from 'react';
 import * as THREE from 'three';
 
+/**
+ * Configuration parameters for the interactive particle cloud.
+ */
 interface ParticleSphereProps {
+  /** Canvas width and height in CSS pixels */
   size?: number;
+  /** Total number of point vertices in the Fibonacci sphere */
   particleCount?: number;
+  /** Particle point color (hex or CSS color string) */
   color?: string;
+  /** Point attenuation scale */
   particleSize?: number;
 }
 
+/**
+ * ParticleSphere Component
+ * 
+ * Generates an interactive Three.js point cloud using the Golden Ratio Fibonacci lattice.
+ * Listens for cursor proximity to disperse particles outward dynamically.
+ * 
+ * @param {ParticleSphereProps} props
+ * @returns {JSX.Element} Container element mounting the WebGL canvas
+ */
 export default function ParticleSphere({
   size = 220,
   particleCount = 3200,

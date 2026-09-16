@@ -1,5 +1,16 @@
+/**
+ * @file rbac.ts
+ * @description Enterprise Role-Based Access Control (RBAC) and Capability Matrix.
+ * Defines 5 enterprise roles (OWNER, ADMIN, MANAGER, MEMBER, VIEWER) and 12 granular permissions,
+ * governing resource access, AI action approvals, team management, and workspace exports.
+ * 
+ * @module lib/security/rbac
+ */
+
+/** Enterprise tenancy user roles */
 export type Role = 'OWNER' | 'ADMIN' | 'MANAGER' | 'MEMBER' | 'VIEWER';
 
+/** Granular permission authorizations */
 export type Permission =
   | 'view_applications'
   | 'create_applications'
@@ -14,8 +25,13 @@ export type Permission =
   | 'view_audit_logs'
   | 'manage_security_settings';
 
+/**
+ * Capability rule defining boolean role allowances for a given permission.
+ */
 export interface CapabilityRule {
+  /** Descriptive capability title */
   capability: string;
+  /** Granular target permission */
   permission: Permission;
   OWNER: boolean;
   ADMIN: boolean;

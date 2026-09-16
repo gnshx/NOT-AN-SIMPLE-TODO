@@ -1,3 +1,12 @@
+/**
+ * @file tasks/page.tsx
+ * @description Task Management and Execution Queue.
+ * Enables creating, filtering, completing, and prioritizing technical deliverables,
+ * interview preps, follow-up emails, and application artifacts.
+ * 
+ * @module app/tasks/page
+ */
+
 'use client';
 import { useState } from 'react';
 import Sidebar from '@/components/Sidebar';
@@ -13,12 +22,21 @@ import {
   Filter
 } from 'lucide-react';
 
+/**
+ * Task item data contract.
+ */
 interface Task {
+  /** Unique task identifier */
   id: string;
+  /** Task description / title */
   title: string;
+  /** Urgency classification */
   priority: 'HIGH' | 'MEDIUM' | 'LOW';
+  /** Workflow grouping / domain */
   category: string;
+  /** Completion state */
   completed: boolean;
+  /** Target execution timeframe label */
   dueDate?: string;
 }
 
@@ -29,6 +47,13 @@ const INITIAL_TASKS: Task[] = [
   { id: 't4', title: 'Review Acme Corp tech stack & Glassdoor question sheet', priority: 'LOW', category: 'Research', completed: false, dueDate: 'May 16' }
 ];
 
+/**
+ * TasksPage Component
+ * 
+ * Interactive task board supporting instant creation, status toggles, deletion, and filtering.
+ * 
+ * @returns {JSX.Element} Task management workspace
+ */
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>(INITIAL_TASKS);
   const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'COMPLETED'>('ALL');

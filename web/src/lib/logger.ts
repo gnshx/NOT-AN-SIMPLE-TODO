@@ -1,10 +1,19 @@
+/**
+ * @file logger.ts
+ * @description Enterprise structured telemetry logger built on Pino.
+ * Enforces automatic credential redaction (tokens, cookies, auth headers, passwords),
+ * ISO-8601 timestamps, and correlation context binding (requestId, userId, workspaceId).
+ * 
+ * @module lib/logger
+ */
+
 import pino from 'pino';
 import { redactAuthorizationTokens } from './security/envelopeEncryption';
 
 const isProduction = process.env.NODE_ENV === 'production';
 const isTest = process.env.NODE_ENV === 'test';
 
-// Sensitive keys automatically redacted across all log payloads
+/** Sensitive dictionary paths intercepted and replaced with [REDACTED] */
 const REDACT_PATHS = [
   'authorization',
   'headers.authorization',

@@ -1,9 +1,30 @@
+/**
+ * @file ActivityChart.tsx
+ * @description High-density telemetry area chart visualising historical application velocity.
+ * Built using Recharts with custom emerald gradient fill, monospace ticks, and a glassmorphic tooltip.
+ * 
+ * @module components/ActivityChart
+ */
+
 'use client';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
-interface DataPoint { label: string; value: number; }
+/**
+ * Metric time-series sample for the chart.
+ */
+interface DataPoint {
+  /** Timestamp or timeframe label (e.g. "Mon", "Day 1", "08:00") */
+  label: string;
+  /** Volume count of job applications recorded in this period */
+  value: number;
+}
 
+/**
+ * Custom glassmorphic tooltip rendered on chart hover.
+ * 
+ * @param {object} props - Recharts tooltip payload
+ */
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload?.length) {
     return (
@@ -16,6 +37,15 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
+/**
+ * ActivityChart Component
+ * 
+ * Renders an interactive responsive area graph highlighting application velocity
+ * with responsive container auto-scaling.
+ * 
+ * @param {object} props
+ * @param {DataPoint[]} props.data - Time series records to display
+ */
 export default function ActivityChart({ data }: { data: DataPoint[] }) {
   return (
     <ResponsiveContainer width="100%" height={150}>

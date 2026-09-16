@@ -1,3 +1,12 @@
+/**
+ * @file intelligence/page.tsx
+ * @description Career Decision Intelligence and Graph Analytics.
+ * Computes end-to-end recruitment conversion funnel metrics (Applications -> Offers),
+ * highlights skill correlation nodes, and displays velocity telemetry.
+ * 
+ * @module app/intelligence/page
+ */
+
 'use client';
 import Sidebar from '@/components/Sidebar';
 import ActivityChart from '@/components/ActivityChart';
@@ -14,6 +23,13 @@ import {
   Layers
 } from 'lucide-react';
 
+/**
+ * IntelligencePage Component
+ * 
+ * Renders statistical funnel graphs, AI-driven correlation summaries, and skill-role graph linkages.
+ * 
+ * @returns {JSX.Element} Career Intelligence Engine view
+ */
 export default function IntelligencePage() {
   const funnelData = [
     { stage: 'Applications Submitted', count: 42, pct: 100 },

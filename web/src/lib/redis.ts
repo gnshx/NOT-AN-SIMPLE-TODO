@@ -1,12 +1,9 @@
 /**
- * Redis client abstraction for DayNight Pilot.
- * Provides distributed state management for:
- *   - Distributed rate limiting (Phase 1)
- *   - BullMQ background job queues (Phase 2)
- *   - Idempotency keys (Phase 2)
- *
- * Graceful fallback: If REDIS_URL is not set or Redis is unreachable,
- * degrades gracefully to in-memory fallback without crashing the process.
+ * @file redis.ts
+ * @description Distributed Redis client abstraction with zero-crash in-memory degradation.
+ * Powers distributed token bucket rate limiting, BullMQ background queues, and idempotency locks.
+ * 
+ * @module lib/redis
  */
 
 import type Redis from 'ioredis';
@@ -14,6 +11,12 @@ import type Redis from 'ioredis';
 let redisClient: Redis | null = null;
 let isConnected = false;
 
+/**
+ * Retrieves the shared ioredis client singleton or establishes a new lazy connection.
+ * Returns null if REDIS_URL is unconfigured or if connection fails.
+ * 
+ * @returns {Redis | null} Connected or connecting Redis client, or null
+ */
 export function getRedisClient(): Redis | null {
   const redisUrl = process.env.REDIS_URL;
   if (!redisUrl) {
@@ -63,13 +66,20 @@ export function getRedisClient(): Redis | null {
   }
 }
 
+/**
+ * Verifies whether the Redis client is initialized, connected, and ready to accept commands.
+ * 
+ * @returns {boolean} True if ready, false if disconnected or in fallback mode
+ */
 export function isRedisConnected(): boolean {
   return isConnected && redisClient !== null && redisClient.status === 'ready';
 }
 
 /**
  * Returns connection configuration tailored for BullMQ workers and queues.
- * BullMQ requires maxRetriesPerRequest: null.
+ * Configures maxRetriesPerRequest to null as strictly mandated by BullMQ engine specifications.
+ * 
+ * @returns {object} BullMQ connection parameters
  */
 export function getBullMQConnectionOptions() {
   const redisUrl = process.env.REDIS_URL || 'redis://127.0.0.1:6379';

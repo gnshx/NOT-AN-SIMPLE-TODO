@@ -1,9 +1,22 @@
+/**
+ * @file HolographicOrb.tsx
+ * @description WebGL Three.js iridescent holographic core.
+ * Features vertex distortion, mouse parallax tracking, counter-rotating wireframe rings,
+ * floating motion physics, and chromatic aberration CSS halos.
+ * 
+ * @module components/HolographicOrb
+ */
+
 'use client';
 import { useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { MeshDistortMaterial, Float } from '@react-three/drei';
 import * as THREE from 'three';
 
+/**
+ * Three.js Inner & Outer distorted iridescent sphere mesh.
+ * Tracks pointer displacement and continuously shifts HSL emissive spectrum.
+ */
 function IridescentOrb() {
   const meshRef  = useRef<THREE.Mesh>(null!);
   const innerRef = useRef<THREE.Mesh>(null!);
@@ -83,6 +96,10 @@ function IridescentOrb() {
   );
 }
 
+/**
+ * 3-axis independent gyroscopic wireframe torus rings.
+ * Rotates along pitch, yaw, and roll at staggered harmonic frequencies.
+ */
 function WireframeRings() {
   const r1 = useRef<THREE.Mesh>(null!);
   const r2 = useRef<THREE.Mesh>(null!);
@@ -112,6 +129,16 @@ function WireframeRings() {
   );
 }
 
+/**
+ * HolographicOrb Component
+ * 
+ * Embeds a WebGL Canvas containing lighting, chromatic aberration glows,
+ * distorted iridescent mesh, and gyroscopic torus rings.
+ * 
+ * @param {object} props
+ * @param {number} [props.size=220] - Dimensions in pixels (width and height)
+ * @returns {JSX.Element} Interactive 3D WebGL element
+ */
 export default function HolographicOrb({ size = 220 }: { size?: number }) {
   return (
     <div style={{ width: size, height: size, position: 'relative' }}>

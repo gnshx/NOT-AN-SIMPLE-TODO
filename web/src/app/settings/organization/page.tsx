@@ -1,3 +1,12 @@
+/**
+ * @file settings/organization/page.tsx
+ * @description Enterprise Governance, Multi-tenant RBAC, and Immutable Audit Log Viewer.
+ * Manages organization team members, role assignments (OWNER, ADMIN, MANAGER, MEMBER, VIEWER),
+ * AI autonomous approval thresholds, and security audit trails.
+ * 
+ * @module app/settings/organization/page
+ */
+
 'use client';
 import { useState } from 'react';
 import Sidebar from '@/components/Sidebar';
@@ -14,11 +23,19 @@ import {
   AlertTriangle
 } from 'lucide-react';
 
+/**
+ * Organization team member data record.
+ */
 interface Member {
+  /** Unique member ID */
   id: string;
+  /** Full name */
   name: string;
+  /** Work email */
   email: string;
+  /** Assigned enterprise RBAC role */
   role: 'OWNER' | 'ADMIN' | 'MANAGER' | 'MEMBER' | 'VIEWER';
+  /** Invitation or account activation status */
   status: 'ACTIVE' | 'INVITED';
 }
 
@@ -28,11 +45,19 @@ const MOCK_MEMBERS: Member[] = [
   { id: 'm-3', name: 'Alex Rivera', email: 'alex.recruiter@tech.co', role: 'MANAGER', status: 'ACTIVE' }
 ];
 
+/**
+ * Tamper-evident audit trail log entry.
+ */
 interface AuditLogEntry {
+  /** Unique audit record identifier */
   id: string;
+  /** Executed event or policy modification */
   action: string;
+  /** User or service principal actor */
   user: string;
+  /** Relative event timestamp */
   timestamp: string;
+  /** Source IP address for forensic compliance */
   ip: string;
 }
 
@@ -42,6 +67,13 @@ const MOCK_AUDIT_LOGS: AuditLogEntry[] = [
   { id: 'al-3', action: 'Updated Organization RBAC Policy', user: 'Ganesh', timestamp: 'Yesterday', ip: '192.168.1.42' }
 ];
 
+/**
+ * OrganizationSettingsPage Component
+ * 
+ * Administrative control panel configuring team roles, AI threshold boundaries, and audit visibility.
+ * 
+ * @returns {JSX.Element} Organization & Governance management page
+ */
 export default function OrganizationSettingsPage() {
   const [members] = useState<Member[]>(MOCK_MEMBERS);
   const [autoApproveConfidence, setAutoApproveConfidence] = useState(90);

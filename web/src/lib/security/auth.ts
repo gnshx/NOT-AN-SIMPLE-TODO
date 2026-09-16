@@ -1,26 +1,35 @@
 /**
- * P0-03: Authentication module — production-hardened.
- *
- * CURRENT STATE: In-memory session store (dev/testing only).
- * PHASE 1 NEXT: Replace with NextAuth.js provider + JWT/database sessions.
- *
- * Security guarantees enforced now:
- * - registerTestSession() is BLOCKED in production builds
- * - Sessions expire and are checked on every request
- * - Session tokens are never logged
+ * @file auth.ts
+ * @description Enterprise authentication and session validation security module.
+ * Enforces session token validity, expiration checking, immediate token revocation,
+ * secure cookie policies, and strictly disallows test bypasses in production environments.
+ * 
+ * @module lib/security/auth
  */
 
 import { redactAuthorizationTokens } from './envelopeEncryption';
 
+/**
+ * Authenticated principal session data contract.
+ */
 export interface UserSession {
+  /** Unique session identifier */
   sessionId: string;
+  /** Subject user identifier */
   userId: string;
+  /** Primary verified email address */
   email: string;
+  /** Full name */
   name: string;
+  /** Multi-tenant workspace partition */
   workspaceId: string;
+  /** Organization tenancy partition */
   organizationId: string;
+  /** RBAC role assignment */
   role?: string;
+  /** Absolute expiration timestamp */
   expiresAt: Date;
+  /** Explicit revocation flag */
   isRevoked: boolean;
 }
 

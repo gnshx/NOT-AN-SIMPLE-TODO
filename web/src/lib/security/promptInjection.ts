@@ -1,3 +1,13 @@
+/**
+ * @file promptInjection.ts
+ * @description 15-Vector Prompt Injection Defense & Evaluation Benchmark Harness.
+ * Detects adversarial prompt attacks, indirect retrieval poisoning, system prompt exfiltration,
+ * credential leakage vectors, markdown image exfiltration, and unicode evasion tactics.
+ * 
+ * @module lib/security/promptInjection
+ */
+
+/** 15-vector OWASP LLM attack category classifications */
 export type PromptInjectionCategory =
   | 'PI-001' // Direct instruction override
   | 'PI-002' // Email injection
@@ -15,11 +25,19 @@ export type PromptInjectionCategory =
   | 'PI-014' // Retrieval poisoning
   | 'PI-015'; // Multi-turn manipulation
 
+/**
+ * Result returned by the prompt injection heuristic & semantic scanner.
+ */
 export interface InjectionDetectionResult {
+  /** True if an attack pattern or malicious payload was detected */
   detected: boolean;
+  /** Categorical taxonomy ID */
   category?: PromptInjectionCategory;
+  /** Scoring confidence (0.0 to 1.0) */
   confidence: number;
+  /** Detailed forensic trigger reason */
   reason?: string;
+  /** Regex pattern or signature matched */
   matchedPattern?: string;
 }
 

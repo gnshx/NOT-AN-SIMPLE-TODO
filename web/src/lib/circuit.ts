@@ -1,20 +1,34 @@
 /**
- * DayNight Pilot — Production Circuit Breaker Engine
- * P5-02: Protects external dependencies (AI Gateway, Gmail API, Stripe)
- * from cascading failures through stateful fail-fast and auto-recovery.
+ * @file circuit.ts
+ * @description Production Circuit Breaker Engine for DayNight Pilot.
+ * Protects external dependencies (AI Gateways, Gmail API, Stripe, Webhooks) from cascading failures
+ * through stateful fail-fast, backoff intervals, and automatic half-open recovery.
+ * 
+ * @module lib/circuit
  */
 
 import { logger } from './logger';
 
+/** Tri-state circuit breaker operational lifecycle */
 export type CircuitState = 'CLOSED' | 'OPEN' | 'HALF_OPEN';
 
+/**
+ * Configuration options for tuning circuit sensitivity and recovery thresholds.
+ */
 export interface CircuitBreakerOptions {
+  /** Descriptive identifier of protected upstream service */
   name: string;
-  failureThreshold?: number; // Number of consecutive failures before opening
-  resetTimeoutMs?: number;   // Time to wait before moving from OPEN to HALF_OPEN
-  successThreshold?: number; // Number of consecutive successes in HALF_OPEN to close
+  /** Consecutive failures required to trip the breaker to OPEN (defaults to 5) */
+  failureThreshold?: number;
+  /** Milliseconds to pause requests before allowing canary attempts in HALF_OPEN (defaults to 30,000ms) */
+  resetTimeoutMs?: number;
+  /** Consecutive successful canary requests needed to heal back to CLOSED (defaults to 2) */
+  successThreshold?: number;
 }
 
+/**
+ * Error thrown immediately when a requested invocation encounters an OPEN circuit breaker.
+ */
 export class CircuitBreakerOpenError extends Error {
   constructor(public circuitName: string, public resetInMs: number) {
     super(`Circuit breaker '${circuitName}' is OPEN. Failing fast to prevent cascading failure. Retry in ${Math.round(resetInMs / 1000)}s.`);
