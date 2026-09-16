@@ -20,7 +20,13 @@ export const PRODUCTION_SECURITY_HEADERS: Record<string, string> = {
 };
 
 export function applySecurityHeaders(headers: Headers): void {
+  const isDev = process.env.NODE_ENV === 'development';
   for (const [key, value] of Object.entries(PRODUCTION_SECURITY_HEADERS)) {
-    headers.set(key, value);
+    if (key === 'Content-Security-Policy' && isDev) {
+      // In development mode, React and Next.js Turbopack require 'unsafe-eval' to reconstruct callstacks
+      headers.set(key, value.replace("script-src 'self' 'unsafe-inline'", "script-src 'self' 'unsafe-inline' 'unsafe-eval'"));
+    } else {
+      headers.set(key, value);
+    }
   }
 }
