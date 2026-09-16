@@ -48,12 +48,14 @@ export function validateExternalUrl(urlString: string): SsrfValidationResult {
       return { safe: false, reason: `Restricted port '${parsed.port}'. Only standard HTTP/HTTPS ports (80, 443) are allowed.` };
     }
 
-    const hostname = parsed.hostname.toLowerCase();
+    const rawHost = parsed.hostname.toLowerCase();
+    const hostname = rawHost.replace(/^\[|\]$/g, '');
 
     // 3. Blocked Hostname Check
-    if (BLOCKED_HOSTNAMES.has(hostname)) {
-      return { safe: false, reason: `Access to internal host '${hostname}' is blocked (SSRF Protection).` };
+    if (BLOCKED_HOSTNAMES.has(rawHost) || BLOCKED_HOSTNAMES.has(hostname) || hostname === '::1') {
+      return { safe: false, reason: `Access to internal host '${rawHost}' is blocked (SSRF Protection).` };
     }
+
 
     // 4. IP Range Check
     for (const range of PRIVATE_IP_RANGES) {

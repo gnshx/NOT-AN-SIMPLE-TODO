@@ -57,6 +57,12 @@ async function findJobByCompany(companyName: string) {
 
 export async function POST(req: Request) {
   try {
+    const secret = req.headers.get('x-telegram-bot-api-secret-token');
+    const expectedSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
+    if (expectedSecret && secret !== expectedSecret) {
+      return NextResponse.json({ error: 'Unauthorized webhook request' }, { status: 401 });
+    }
+
     const rawBody = await req.json().catch(() => null);
     const update = TelegramUpdateSchema.parse(rawBody);
     

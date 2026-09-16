@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { Client } from '@notionhq/client';
+import { requireAuthentication } from '@/lib/security/auth';
 import { handleApiError, AppError } from '@/lib/errors';
 
 const UpdateJobSchema = z.object({
@@ -10,6 +11,8 @@ const UpdateJobSchema = z.object({
 
 export async function POST(req: Request) {
   try {
+    await requireAuthentication(req.headers);
+
     if (!process.env.NOTION_API_KEY || !process.env.NOTION_DATABASE_ID) {
       throw new AppError('Notion API integration is not configured in this environment.', 400, 'NOTION_NOT_CONFIGURED');
     }

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { runPilotAgent } from '@/lib/ai/pilot';
+import { requireAuthentication } from '@/lib/security/auth';
 import { checkDistributedRateLimit } from '@/lib/security/rateLimiter';
 import { detectPromptInjection } from '@/lib/security/promptInjection';
 import { handleApiError, RateLimitError, AppError } from '@/lib/errors';
@@ -12,6 +12,7 @@ const PilotRequestSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    const session = await requireAuthentication(request.headers);
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() || '127.0.0.1';
 
     // 1. Rate limiting on AI endpoint (20 requests/minute)
@@ -23,6 +24,11 @@ export async function POST(request: Request) {
     // 2. Input validation
     const body = await request.json().catch(() => null);
     const { query, workspaceId } = PilotRequestSchema.parse(body);
+
+    const targetWorkspaceId = workspaceId || session.workspaceId;
+    if (workspaceId && workspaceId !== session.workspaceId) {
+      throw new AppError('Forbidden: Cannot invoke AI pilot across workspaces.', 403, 'FORBIDDEN');
+    }
 
     // 3. Prompt Injection Defense
     const scan = detectPromptInjection(query);
@@ -39,13 +45,14 @@ export async function POST(request: Request) {
     const { executeAiGateway } = await import('@/lib/ai/gateway');
     const response = await executeAiGateway({
       query,
-      userId: 'usr-default',
-      workspaceId: workspaceId || 'default-workspace',
-      role: 'MEMBER',
-      tier: 'FREE'
+      userId: session.userId,
+      workspaceId: targetWorkspaceId,
+      role: (session.role as any) || 'MEMBER',
+      tier: 'PRO'
     });
     return NextResponse.json(response);
   } catch (error) {
     return handleApiError(error);
   }
 }
+

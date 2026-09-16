@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-09-16T06:29:28.293Z",
+  "timestamp": "2026-09-16T06:47:31.644Z",
   "total": 5,
   "passed": 5,
   "failed": 0,
@@ -8,12 +8,12 @@
     {
       "id": "eval-001",
       "status": "PASSED",
-      "latencyMs": 2
+      "latencyMs": 4
     },
     {
       "id": "eval-002",
       "status": "PASSED",
-      "latencyMs": 1
+      "latencyMs": 0
     },
     {
       "id": "eval-003",

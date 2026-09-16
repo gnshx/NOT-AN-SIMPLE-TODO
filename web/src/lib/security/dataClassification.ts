@@ -31,7 +31,17 @@ export function redactPII(text: string): { redactedText: string; redactionsCount
 
   let count = 0;
 
+  // 1. Secrets & Tokens first (to prevent digit segments within tokens from matching phone regex)
   let redacted = text.replace(
+    /(sk-[a-zA-Z0-9]{20,}|ya29\.[a-zA-Z0-9_-]{30,}|dnp_live_[a-zA-Z0-9]{20,})/g,
+    () => {
+      count++;
+      return '[SECRET_REDACTED]';
+    }
+  );
+
+  // 2. Email addresses
+  redacted = redacted.replace(
     /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
     () => {
       count++;
@@ -39,19 +49,12 @@ export function redactPII(text: string): { redactedText: string; redactionsCount
     }
   );
 
+  // 3. Phone numbers (with word boundaries to avoid matching random number substrings)
   redacted = redacted.replace(
-    /(\+\d{1,2}\s?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/g,
+    /\b(\+\d{1,2}\s?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}\b/g,
     () => {
       count++;
       return '[PHONE_REDACTED]';
-    }
-  );
-
-  redacted = redacted.replace(
-    /(sk-[a-zA-Z0-9]{20,}|ya29\.[a-zA-Z0-9_-]{30,})/g,
-    () => {
-      count++;
-      return '[SECRET_REDACTED]';
     }
   );
 
@@ -59,6 +62,7 @@ export function redactPII(text: string): { redactedText: string; redactionsCount
     redactedText: redacted,
     redactionsCount: count
   };
+
 }
 
 /**
