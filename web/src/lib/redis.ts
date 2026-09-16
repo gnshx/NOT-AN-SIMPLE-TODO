@@ -27,10 +27,10 @@ export function getRedisClient(): Redis | null {
   try {
     // Dynamically require to avoid pulling Node builtins into Edge bundles
     const RedisClass = require('ioredis');
-    redisClient = new RedisClass(redisUrl, {
+    const client = new RedisClass(redisUrl, {
       maxRetriesPerRequest: 2,
       connectTimeout: 3000,
-      retryStrategy(times) {
+      retryStrategy(times: number) {
         if (times > 3) {
           return null; // Stop retrying after 3 failures to prevent connection thrashing
         }
@@ -39,11 +39,11 @@ export function getRedisClient(): Redis | null {
       lazyConnect: true
     });
 
-    redisClient.on('connect', () => {
+    client.on('connect', () => {
       isConnected = true;
     });
 
-    redisClient.on('error', (err) => {
+    client.on('error', (err: any) => {
       isConnected = false;
       // Suppress spammy log in dev if local Redis is down
       if (process.env.NODE_ENV !== 'test') {
@@ -51,10 +51,11 @@ export function getRedisClient(): Redis | null {
       }
     });
 
-    redisClient.connect().catch(() => {
+    client.connect().catch(() => {
       isConnected = false;
     });
 
+    redisClient = client;
     return redisClient;
   } catch (err) {
     isConnected = false;
