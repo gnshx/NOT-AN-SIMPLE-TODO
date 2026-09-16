@@ -26,12 +26,17 @@ const AVATAR_COLORS = [
   ['#fbbf24','#331e04'], ['#38bdf8','#04252e'], ['#f87171','#330c0c'],
 ];
 
-function getInitials(name: string) {
-  return name.replace(/[^a-zA-Z\s]/g, '').split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
+function getInitials(name?: string) {
+  if (!name || typeof name !== 'string') return 'DP';
+  return name.replace(/[^a-zA-Z\s]/g, '').split(/\s+/).map(w => w[0]).filter(Boolean).join('').toUpperCase().slice(0, 2) || 'DP';
 }
-function getAvatarColor(name: string) {
-  let h = 0; for (const c of name) h = (h * 31 + c.charCodeAt(0)) & 0xffff;
-  return AVATAR_COLORS[h % AVATAR_COLORS.length];
+function getAvatarColor(name?: string) {
+  if (!name || typeof name !== 'string') return AVATAR_COLORS[0];
+  let h = 0;
+  for (let i = 0; i < name.length; i++) {
+    h = (h * 31 + name.charCodeAt(i)) & 0xffff;
+  }
+  return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length] || AVATAR_COLORS[0];
 }
 
 const ALL_FILTERS = ['ALL', 'Applied', 'Under Review', 'OA Sent', 'Interview Scheduled', 'Offer', 'Rejected', 'Job Opportunity'];
