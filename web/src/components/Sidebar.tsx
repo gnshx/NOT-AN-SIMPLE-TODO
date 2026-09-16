@@ -28,21 +28,28 @@ export default function Sidebar() {
   const [workspace, setWorkspace] = useState('Personal Workspace');
   const [wsOpen, setWsOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
 
-  // Initialize theme from localStorage or default to light mode
+  // Synchronize React state with DOM attribute already set by layout anti-FOUC script
   useEffect(() => {
-    const saved = localStorage.getItem('theme') as 'light' | 'dark' | null;
-    const initialTheme = saved || 'light';
-    setTheme(initialTheme);
-    document.documentElement.setAttribute('data-theme', initialTheme);
+    const active = (document.documentElement.getAttribute('data-theme') as 'light' | 'dark') || 
+                   (localStorage.getItem('theme') as 'light' | 'dark') || 
+                   'dark';
+    setTheme(active);
+    document.documentElement.setAttribute('data-theme', active);
+    document.documentElement.style.colorScheme = active;
+    document.documentElement.style.backgroundColor = active === 'light' ? '#f8fafc' : '#080c14';
   }, []);
 
   const toggleTheme = () => {
     const nextTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(nextTheme);
-    localStorage.setItem('theme', nextTheme);
+    try {
+      localStorage.setItem('theme', nextTheme);
+    } catch {}
     document.documentElement.setAttribute('data-theme', nextTheme);
+    document.documentElement.style.colorScheme = nextTheme;
+    document.documentElement.style.backgroundColor = nextTheme === 'light' ? '#f8fafc' : '#080c14';
   };
 
   // Close mobile drawer on route change

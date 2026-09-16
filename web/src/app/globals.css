@@ -1,67 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap');
 
-/* Default Light Mode (White Mode) Tokens */
-:root, [data-theme="light"] {
-  color-scheme: light;
-
-  /* Core Light Palette */
-  --bg-obsidian: #f8fafc;
-  --bg-surface-1: #ffffff;
-  --bg-surface-2: #f1f5f9;
-  --bg-surface-3: #e2e8f0;
-  --bg-card: #ffffff;
-  --bg-card-hover: #ffffff;
-
-  /* Borders & Contour Geometry */
-  --border-subtle: #e2e8f0;
-  --border-dim: #cbd5e1;
-  --border-glow: rgba(37, 99, 235, 0.35);
-  --border-focus: #2563eb;
-
-  /* Calibrated High-Contrast Colors */
-  --accent-cobalt: #2563eb;
-  --accent-emerald: #059669;
-  --accent-violet: #7c3aed;
-  --accent-amber: #d97706;
-  --accent-crimson: #dc2626;
-  --accent-cyan: #0284c7;
-  --accent-rose: #e11d48;
-
-  /* Kanban Badge Colors (Light Mode) */
-  --accent-applied: #475569;
-  --accent-replied: #7c3aed;
-  --accent-test: #d97706;
-  --accent-interview: #2563eb;
-  --accent-offer: #059669;
-  --accent-rejected: #dc2626;
-
-  /* High-Contrast Typography System */
-  --text-primary: #0f172a;
-  --text-secondary: #334155;
-  --text-muted: #64748b;
-  --text-dim: #94a3b8;
-
-  --font-display: 'Syne', sans-serif;
-  --font-heading: 'Plus Jakarta Sans', sans-serif;
-  --font-body: 'Plus Jakarta Sans', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-
-  /* Layout Measurements */
-  --sidebar-w: 256px;
-  --radius-lg: 16px;
-  --radius: 12px;
-  --radius-sm: 8px;
-  --radius-xs: 6px;
-
-  /* Elevation Shadows for White Mode */
-  --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.05);
-  --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.08);
-  --shadow-lg: 0 16px 40px rgba(15, 23, 42, 0.12);
-  --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.15);
-}
-
-/* Dark Mode (Obsidian Mode) Tokens */
-[data-theme="dark"] {
+/* Default Dark Mode (Obsidian Mode) Tokens - Prevents white FOUC on reload */
+:root, [data-theme="dark"] {
   color-scheme: dark;
 
   /* Core Dark Palette */
@@ -101,11 +41,71 @@
   --text-muted: #94a3b8;
   --text-dim: #64748b;
 
+  --font-display: 'Syne', sans-serif;
+  --font-heading: 'Plus Jakarta Sans', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Layout Measurements */
+  --sidebar-w: 256px;
+  --radius-lg: 16px;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-xs: 6px;
+
   /* Elevation Shadows for Dark Mode */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
   --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
   --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.5);
   --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.2);
+}
+
+/* Light Mode Tokens (Activated explicitly via data-theme="light") */
+[data-theme="light"] {
+  color-scheme: light;
+
+  /* Core Light Palette */
+  --bg-obsidian: #f8fafc;
+  --bg-surface-1: #ffffff;
+  --bg-surface-2: #f1f5f9;
+  --bg-surface-3: #e2e8f0;
+  --bg-card: #ffffff;
+  --bg-card-hover: #ffffff;
+
+  /* Borders & Contour Geometry */
+  --border-subtle: #e2e8f0;
+  --border-dim: #cbd5e1;
+  --border-glow: rgba(37, 99, 235, 0.35);
+  --border-focus: #2563eb;
+
+  /* Calibrated High-Contrast Colors */
+  --accent-cobalt: #2563eb;
+  --accent-emerald: #059669;
+  --accent-violet: #7c3aed;
+  --accent-amber: #d97706;
+  --accent-crimson: #dc2626;
+  --accent-cyan: #0284c7;
+  --accent-rose: #e11d48;
+
+  /* Kanban Badge Colors (Light Mode) */
+  --accent-applied: #475569;
+  --accent-replied: #7c3aed;
+  --accent-test: #d97706;
+  --accent-interview: #2563eb;
+  --accent-offer: #059669;
+  --accent-rejected: #dc2626;
+
+  /* High-Contrast Typography System */
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --text-dim: #94a3b8;
+
+  /* Elevation Shadows for White Mode */
+  --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 16px 40px rgba(15, 23, 42, 0.12);
+  --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.15);
 }
 
 *, *::before, *::after {
@@ -116,6 +116,8 @@
 
 html {
   scroll-behavior: smooth;
+  background-color: var(--bg-obsidian);
+  color-scheme: dark;
 }
 
 body {
@@ -132,7 +134,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
   min-height: 100vh;
-  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 a {

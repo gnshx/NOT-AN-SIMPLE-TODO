@@ -9,8 +9,25 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body style={{ background: 'var(--bg-void)', overflowX: 'hidden' }}>
+    <html lang="en" data-theme="dark" suppressHydrationWarning style={{ colorScheme: 'dark', backgroundColor: '#080c14' }}>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var saved = localStorage.getItem('theme');
+                  var theme = saved || 'dark';
+                  document.documentElement.setAttribute('data-theme', theme);
+                  document.documentElement.style.colorScheme = theme;
+                  document.documentElement.style.backgroundColor = theme === 'light' ? '#f8fafc' : '#080c14';
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
+      <body style={{ background: 'var(--bg-obsidian, #080c14)', color: 'var(--text-primary, #f8fafc)', overflowX: 'hidden' }}>
         <CommandPalette />
         {children}
       </body>
