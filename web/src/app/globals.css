@@ -1,3 +1,25 @@
+/**
+ * @file globals.css
+ * @description DayNight Pilot Aerospace Precision Design System & Global Stylesheet.
+ * 
+ * Token System Architecture:
+ * 1. Default Tokens (:root / [data-theme="dark"]):
+ *    Defaults directly to Obsidian Dark Mode (#080c14) to eliminate any FOUC (white flash).
+ * 2. Light Mode Tokens ([data-theme="light"]):
+ *    Activated explicitly when user selects light mode in the workspace controller.
+ * 3. Typography Hierarchy:
+ *    - Display: 'Syne' (Geometric, bold headers & executive stat numerals)
+ *    - Heading: 'Plus Jakarta Sans' (Readable, modern enterprise UI elements)
+ *    - Body: 'Plus Jakarta Sans' (High legibility for cards, tables, and briefs)
+ *    - Monospace: 'JetBrains Mono' (Cryptographic hashes, timestamps, tool calls, and scores)
+ * 4. Micro-Interactions & Components:
+ *    - Tactical background grid (.tactical-grid)
+ *    - Sentinel pulse animation (.sentinel-pulse)
+ *    - Enterprise button primitives (.btn-primary, .btn-secondary, .btn-ghost, .btn-danger)
+ *    - OWASP 4-tier risk tokens (.badge-risk-low, .badge-risk-med, .badge-risk-high, .badge-risk-crit)
+ *    - Slide-over inspector drawer (.inspector-drawer & .drawer-backdrop)
+ */
+
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap');
 
 /* Default Dark Mode (Obsidian Mode) Tokens - Prevents white FOUC on reload */

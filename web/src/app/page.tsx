@@ -1,3 +1,15 @@
+/**
+ * @file page.tsx
+ * @description Executive Mission Control Dashboard for DayNight Pilot.
+ * 
+ * Capabilities:
+ * - Real-Time Mission Telemetry Deck (Engine version, latency, active timestamps).
+ * - 4-Vector Key Metric Counters (Active Targets, Live Interviews, Conversion Yield, Defense Containment).
+ * - Interactive Pipeline List with company initials avatar, status badge, and risk rating.
+ * - Slide-Over Job Inspector Drawer: detailed company legitimacy audit, AI prep sheet, and action triggers.
+ * - Right Command Rail: mounts the WebGL ThreeSentinel visualizer, AI Review queue preview, and activity chart.
+ */
+
 'use client';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -29,6 +41,9 @@ import {
   Briefcase
 } from 'lucide-react';
 
+/**
+ * Data contract representing a single tracked career opportunity / application.
+ */
 interface Job {
   id: string;
   company: string;
@@ -44,6 +59,9 @@ interface Job {
   contact?: string;
 }
 
+/**
+ * Status visual configurations for styling pipeline badges.
+ */
 const STATUS_CFG: Record<string, { cls: string; label: string; dot: string }> = {
   'Applied':             { cls: 'badge-applied',     label: 'APPLIED',    dot: '#94a3b8' },
   'Under Review':        { cls: 'badge-review',      label: 'REVIEWING',  dot: '#a78bfa' },
@@ -54,8 +72,10 @@ const STATUS_CFG: Record<string, { cls: string; label: string; dot: string }> = 
   'Job Opportunity':     { cls: 'badge-opportunity',  label: 'RADAR LEAD', dot: '#38bdf8' },
 };
 
+/** All selectable filter stages */
 const ALL_FILTERS = ['ALL', 'Applied', 'Under Review', 'OA Sent', 'Interview Scheduled', 'Offer', 'Job Opportunity'];
 
+/** User-facing labels for filter buttons */
 const FILTER_LABELS: Record<string, string> = {
   'ALL': 'ALL TARGETS',
   'Applied': 'APPLIED',
@@ -66,6 +86,7 @@ const FILTER_LABELS: Record<string, string> = {
   'Job Opportunity': 'RADAR SIGNALS',
 };
 
+/** Color palette for deterministic company avatar badge generation */
 const AVATAR_PALETTE = [
   ['#38bdf8', 'rgba(56, 189, 248, 0.12)'],
   ['#34d399', 'rgba(52, 211, 153, 0.12)'],
@@ -74,11 +95,21 @@ const AVATAR_PALETTE = [
   ['#f472b6', 'rgba(244, 114, 182, 0.12)'],
 ];
 
+/**
+ * Extracts a 2-letter uppercase initials monogram from any company name.
+ * @param name - Raw company name string.
+ * @returns 2-letter initials (e.g. "Google" -> "GO", "FinTech Stack" -> "FS").
+ */
 function getInitials(name?: string) {
   if (!name) return 'DP';
   return name.replace(/[^a-zA-Z\s]/g, '').split(/\s+/).map(w => w[0]).filter(Boolean).join('').toUpperCase().slice(0, 2) || 'DP';
 }
 
+/**
+ * Hashes a company name string to deterministically select an avatar color pair.
+ * @param name - Raw company name string.
+ * @returns [foregroundHex, backgroundRgba]
+ */
 function getAvatarColor(name?: string) {
   if (!name) return AVATAR_PALETTE[0];
   let h = 0;
@@ -86,6 +117,10 @@ function getAvatarColor(name?: string) {
   return AVATAR_PALETTE[Math.abs(h) % AVATAR_PALETTE.length] || AVATAR_PALETTE[0];
 }
 
+/**
+ * MissionControlDashboard Component
+ * Main landing experience rendering executive career telemetry and the slide-over inspector.
+ */
 export default function MissionControlDashboard() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
@@ -93,6 +128,9 @@ export default function MissionControlDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
 
+  /**
+   * Queries active career application pipeline targets from the server API.
+   */
   const fetchJobs = async () => {
     setLoading(true);
     try {

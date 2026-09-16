@@ -1,3 +1,15 @@
+/**
+ * @file Sidebar.tsx
+ * @description Primary navigation sidebar and workspace controller for DayNight Pilot.
+ * 
+ * Capabilities:
+ * - Multi-tenant Workspace Switching (Personal, University, Recruiting Cohort).
+ * - Aerospace Navigation Links with active route detection and status pills.
+ * - Anti-FOUC Theme Switcher (Light vs Dark mode) with synchronized DOM reflection.
+ * - Mobile responsive slide-out drawer with gesture backdrop dismissal.
+ * - Global Command Palette (⌘K) quick launcher trigger.
+ */
+
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -23,6 +35,10 @@ import {
   Moon
 } from 'lucide-react';
 
+/**
+ * Sidebar Component
+ * Renders the persistent navigation rail on desktop and responsive drawer on mobile.
+ */
 export default function Sidebar() {
   const pathname = usePathname();
   const [workspace, setWorkspace] = useState('Personal Workspace');
@@ -30,7 +46,10 @@ export default function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
 
-  // Synchronize React state with DOM attribute already set by layout anti-FOUC script
+  /**
+   * Synchronize React theme state with the active data-theme attribute on <html>.
+   * Note: The attribute was already set synchronously by the anti-FOUC script in layout.tsx.
+   */
   useEffect(() => {
     const active = (document.documentElement.getAttribute('data-theme') as 'light' | 'dark') || 
                    (localStorage.getItem('theme') as 'light' | 'dark') || 
@@ -41,6 +60,10 @@ export default function Sidebar() {
     document.documentElement.style.backgroundColor = active === 'light' ? '#f8fafc' : '#080c14';
   }, []);
 
+  /**
+   * Toggle between Obsidian Dark Mode and Light Mode.
+   * Persists user choice in localStorage and updates root document styles.
+   */
   const toggleTheme = () => {
     const nextTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(nextTheme);
@@ -52,7 +75,9 @@ export default function Sidebar() {
     document.documentElement.style.backgroundColor = nextTheme === 'light' ? '#f8fafc' : '#080c14';
   };
 
-  // Close mobile drawer on route change
+  /**
+   * Automatically close mobile navigation drawer upon route transition.
+   */
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);

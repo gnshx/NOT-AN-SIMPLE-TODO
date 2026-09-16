@@ -1,3 +1,17 @@
+/**
+ * @file headers.ts
+ * @description HTTP Security Headers Configuration for DayNight Pilot.
+ * 
+ * Standards Compliance:
+ * - OWASP ASVS 4.0 (Section 14: Communications Architecture).
+ * - High-grade Content-Security-Policy (CSP) with strict frame-ancestors.
+ * - HTTP Strict Transport Security (HSTS) with 2-year max-age and preload.
+ * - Strict Cross-Origin isolation and explicit MIME confusion defense.
+ */
+
+/**
+ * Standard production security headers map.
+ */
 export const PRODUCTION_SECURITY_HEADERS: Record<string, string> = {
   'Content-Security-Policy': [
     "default-src 'self'",
@@ -19,6 +33,15 @@ export const PRODUCTION_SECURITY_HEADERS: Record<string, string> = {
   'X-DNS-Prefetch-Control': 'off'
 };
 
+/**
+ * Injects hardened security headers into the outbound HTTP response.
+ * 
+ * In development mode (NODE_ENV === 'development'), 'unsafe-eval' is dynamically
+ * permitted for Next.js Turbopack source-map callstack generation, while
+ * strictly remaining prohibited in staging and production environments.
+ * 
+ * @param headers - Outbound Headers collection to mutate.
+ */
 export function applySecurityHeaders(headers: Headers): void {
   const isDev = process.env.NODE_ENV === 'development';
   for (const [key, value] of Object.entries(PRODUCTION_SECURITY_HEADERS)) {

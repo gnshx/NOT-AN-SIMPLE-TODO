@@ -1,3 +1,18 @@
+/**
+ * @file opportunities/page.tsx
+ * @description Opportunity Signal Radar & Inbound Intelligence Deck for DayNight Pilot.
+ * 
+ * Capabilities:
+ * - Inbound Signal Radar: continuously scans and ranks opportunities from LinkedIn, Wellfound, Unstop, and Direct ATS.
+ * - 4-Vector Alignment Heuristics:
+ *   1. Skill Architecture Fit (%)
+ *   2. Seniority & Experience Match (%)
+ *   3. Geographic / Timezone Compliance (%)
+ *   4. Compensation Band Alignment (%)
+ * - Trust Verification Engine: DNS authority confirmation, domain TLS certificate check, and Glassdoor salary validation.
+ * - Deep Inspector Panel: granular breakdown of matched vs missing skills, direct recruiter leads, and action buttons.
+ */
+
 'use client';
 import { useState } from 'react';
 import Sidebar from '@/components/Sidebar';
@@ -25,6 +40,9 @@ import {
   Sparkles
 } from 'lucide-react';
 
+/**
+ * Data contract representing a detected career signal / opportunity.
+ */
 interface Opportunity {
   id: string;
   company: string;
@@ -47,6 +65,9 @@ interface Opportunity {
   sourceUrl?: string;
 }
 
+/**
+ * Seed signals detected by the inbound radar sweep.
+ */
 const MOCK_OPPORTUNITIES: Opportunity[] = [
   {
     id: 'opp-1',
@@ -128,6 +149,10 @@ const MOCK_OPPORTUNITIES: Opportunity[] = [
   }
 ];
 
+/**
+ * OpportunitiesRadar Component
+ * Renders the radar sweep list alongside the 4-vector alignment inspector.
+ */
 export default function OpportunitiesRadar() {
   const [opportunities] = useState<Opportunity[]>(MOCK_OPPORTUNITIES);
   const [selectedOpp, setSelectedOpp] = useState<Opportunity>(MOCK_OPPORTUNITIES[0]);

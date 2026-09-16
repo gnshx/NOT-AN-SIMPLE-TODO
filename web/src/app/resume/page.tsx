@@ -1,3 +1,15 @@
+/**
+ * @file resume/page.tsx
+ * @description Resume Variant Studio & ATS Optimizer for DayNight Pilot.
+ * 
+ * Capabilities:
+ * - Multi-Variant Profile Architecture: manage distinct resume variants tailored for specific target roles and companies.
+ * - XYZ Formula Bullet Optimizer: enhances standard bullet points with quantified metrics, high-impact action verbs, and tech stacks.
+ * - Semantic ATS Heuristic Analysis: real-time keyword coverage scoring (0–100%) showing matched skills vs missing critical tokens.
+ * - Instant Variant Calibration: auto-tailors variants for specific Tier-1 target companies (e.g. Google, Stripe, Datadog).
+ * - One-Click Actions: copy optimized bullets directly to clipboard or export formatted variants.
+ */
+
 'use client';
 import { useState } from 'react';
 import Sidebar from '@/components/Sidebar';
@@ -23,6 +35,9 @@ import {
   ShieldCheck
 } from 'lucide-react';
 
+/**
+ * Data contract representing a role-specific resume profile version.
+ */
 interface ResumeVersion {
   id: string;
   title: string;
@@ -36,6 +51,9 @@ interface ResumeVersion {
   bulletPoints: { original: string; quantified: string; metricGain: string }[];
 }
 
+/**
+ * Seed resume variants illustrating quantified bullet formulations.
+ */
 const MOCK_RESUMES: ResumeVersion[] = [
   {
     id: 'res-1',
@@ -98,6 +116,10 @@ const MOCK_RESUMES: ResumeVersion[] = [
   }
 ];
 
+/**
+ * ResumeStudioPage Component
+ * Provides an interactive workspace for managing resume variants and tailoring ATS keywords.
+ */
 export default function ResumeStudioPage() {
   const [resumes] = useState<ResumeVersion[]>(MOCK_RESUMES);
   const [selectedResume, setSelectedResume] = useState<ResumeVersion>(MOCK_RESUMES[0]);
@@ -105,12 +127,20 @@ export default function ResumeStudioPage() {
   const [isTailoring, setIsTailoring] = useState(false);
   const [tailorSuccess, setTailorSuccess] = useState(false);
 
+  /**
+   * Copies formatted bullet point text to the user's system clipboard.
+   * @param text - Quantified bullet text.
+   * @param idx - Index of the bullet item for visual feedback.
+   */
   const handleCopyBullet = (text: string, idx: number) => {
     navigator.clipboard.writeText(text);
     setCopiedIdx(idx);
     setTimeout(() => setCopiedIdx(null), 2000);
   };
 
+  /**
+   * Simulates AI semantic re-calibration against target job requirements.
+   */
   const handleTailor = () => {
     setIsTailoring(true);
     setTimeout(() => {

@@ -1,8 +1,27 @@
+/**
+ * @file ThreeSentinel.tsx
+ * @description Real-Time Three.js WebGL Autonomous Sentinel Telemetry Visualizer.
+ * 
+ * Architectural Purpose:
+ * Renders an aerospace 3D holographic orb running particle wave simulations,
+ * augmented with live telemetry metrics (active LLM routing models, pipeline
+ * latency in ms, and current defense isolation level).
+ * 
+ * SSR Safety Pattern:
+ * The underlying Three.js canvas (@/components/HolographicOrb) is loaded via
+ * `next/dynamic` with `{ ssr: false }`. This ensures WebGL contexts are only
+ * requested on the client window, completely avoiding React Server Component
+ * hydration errors or headless DOM crashes during static pre-rendering.
+ */
+
 'use client';
 import dynamic from 'next/dynamic';
 import { ShieldCheck, Activity, Cpu } from 'lucide-react';
 
-// Dynamically import HolographicOrb to prevent any SSR canvas mismatch
+/**
+ * Dynamically imported 3D WebGL HolographicOrb canvas.
+ * Fallback provides a glowing skeleton spinner while WebGL shaders compile.
+ */
 const HolographicOrb = dynamic(() => import('@/components/HolographicOrb'), {
   ssr: false,
   loading: () => (
@@ -18,25 +37,53 @@ const HolographicOrb = dynamic(() => import('@/components/HolographicOrb'), {
         background: 'radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)'
       }}
     >
-      <div style={{ width: 28, height: 28, border: '2px solid var(--accent-cobalt)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+      <div
+        style={{
+          width: 28,
+          height: 28,
+          border: '2px solid var(--accent-cobalt)',
+          borderTopColor: 'transparent',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite'
+        }}
+      />
     </div>
   )
 });
 
+/**
+ * Properties accepted by the ThreeSentinel component.
+ */
 interface ThreeSentinelProps {
+  /** Operational status of the AI Sentinel engine */
   status?: 'SECURE' | 'SCANNING' | 'ALERT';
+  /** Live end-to-end API pipeline latency in milliseconds */
   latencyMs?: number;
+  /** Active multi-model routing tier (e.g. Gemini 2.5 Flash / GPT-4o) */
   modelRoute?: string;
+  /** OWASP ASVS defense containment classification */
   defenseLevel?: string;
 }
 
+/**
+ * ThreeSentinel Component
+ * Renders an aerospace telemetry card containing the 3D orbital canvas and status feeds.
+ * 
+ * @param props - Customization options for status, latency, routing, and defense.
+ */
 export default function ThreeSentinel({
   status = 'SECURE',
   latencyMs = 18,
   modelRoute = 'Gemini 2.5 Flash / GPT-4o',
   defenseLevel = 'Level 1 Strict'
 }: ThreeSentinelProps) {
-  const statusColor = status === 'SECURE' ? 'var(--accent-emerald)' : status === 'SCANNING' ? 'var(--accent-cobalt)' : 'var(--accent-amber)';
+  // Determine telemetry status color (Emerald for secure, Cobalt for scanning, Amber for alert)
+  const statusColor =
+    status === 'SECURE'
+      ? 'var(--accent-emerald)'
+      : status === 'SCANNING'
+      ? 'var(--accent-cobalt)'
+      : 'var(--accent-amber)';
 
   return (
     <div
@@ -50,7 +97,7 @@ export default function ThreeSentinel({
         overflow: 'hidden'
       }}
     >
-      {/* Decorative tactical background grid */}
+      {/* Tactical background grid decoration */}
       <div
         className="tactical-grid"
         style={{
@@ -62,10 +109,19 @@ export default function ThreeSentinel({
       />
 
       <div style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', gap: 16 }}>
-        {/* Header telemetry row */}
+        {/* Header Telemetry Row: Status dot, title, and defense badge */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: statusColor, boxShadow: `0 0 10px ${statusColor}`, display: 'inline-block' }} />
+            <span
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                background: statusColor,
+                boxShadow: `0 0 10px ${statusColor}`,
+                display: 'inline-block'
+              }}
+            />
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '0.06em' }}>
               AUTONOMOUS SENTINEL
             </span>
@@ -75,12 +131,12 @@ export default function ThreeSentinel({
           </span>
         </div>
 
-        {/* 3D Canvas visualizer center */}
+        {/* 3D WebGL Canvas Centerpiece */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px 0' }}>
           <HolographicOrb size={180} />
         </div>
 
-        {/* Live operational telemetry footer */}
+        {/* Live Operational Telemetry Footer: Model route and measured latency */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, paddingTop: 10, borderTop: '1px solid var(--border-subtle)' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.64rem', color: 'var(--text-muted)' }}>ENGINE ROUTE</span>

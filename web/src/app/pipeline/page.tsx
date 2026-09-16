@@ -1,3 +1,15 @@
+/**
+ * @file pipeline/page.tsx
+ * @description Career Execution Pipeline Controller for DayNight Pilot.
+ * 
+ * Capabilities:
+ * - Dual-View Architecture: Seamless toggle between 6-column interactive Kanban and Dense Data Table.
+ * - Stage Progression Model: APPLIED -> REPLIED -> ASSIGNMENT_TEST -> INTERVIEW -> SELECTED_OFFER -> REJECTED.
+ * - Tactical Intelligence Cards: Fit scores, interview due dates, direct online assessment links, and recruiter notes.
+ * - Full CRUD Operations: Add, edit, rename, stage-shift, and delete applications via an aerospace modal dialog.
+ * - Real-Time Search: Instant client-side filtering across company names, roles, and platform channels.
+ */
+
 'use client';
 import { useState } from 'react';
 import Sidebar from '@/components/Sidebar';
@@ -28,6 +40,9 @@ import {
   TrendingUp
 } from 'lucide-react';
 
+/**
+ * Valid Kanban lifecycle stage identifiers.
+ */
 export type KanbanStatus =
   | 'APPLIED'
   | 'REPLIED'
@@ -36,6 +51,9 @@ export type KanbanStatus =
   | 'SELECTED_OFFER'
   | 'REJECTED';
 
+/**
+ * Data contract representing an active pipeline application or assignment task.
+ */
 export interface KanbanJob {
   id: string;
   company: string;
@@ -51,6 +69,9 @@ export interface KanbanJob {
   notes?: string;
 }
 
+/**
+ * Visual styling and metadata configuration for all 6 pipeline stages.
+ */
 const COLUMNS: { id: KanbanStatus; label: string; color: string; badgeCls: string }[] = [
   { id: 'APPLIED', label: 'APPLIED', color: '#94a3b8', badgeCls: 'badge-applied' },
   { id: 'REPLIED', label: 'REPLIED', color: '#a78bfa', badgeCls: 'badge-review' },
@@ -60,6 +81,9 @@ const COLUMNS: { id: KanbanStatus; label: string; color: string; badgeCls: strin
   { id: 'REJECTED', label: 'ARCHIVED', color: '#f87171', badgeCls: 'badge-rejected' }
 ];
 
+/**
+ * Initial candidate pipeline dataset illustrating active stages.
+ */
 const INITIAL_JOBS: KanbanJob[] = [
   {
     id: 'k1',
@@ -135,6 +159,10 @@ const INITIAL_JOBS: KanbanJob[] = [
   }
 ];
 
+/**
+ * PipelinePage Component
+ * Provides executive stage control across candidate opportunities with Kanban and Table views.
+ */
 export default function PipelinePage() {
   const [jobs, setJobs] = useState<KanbanJob[]>(INITIAL_JOBS);
   const [viewMode, setViewMode] = useState<'KANBAN' | 'TABLE'>('KANBAN');

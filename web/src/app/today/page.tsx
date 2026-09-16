@@ -1,3 +1,15 @@
+/**
+ * @file today/page.tsx
+ * @description Day/Night Execution Flight Deck for DayNight Pilot.
+ * 
+ * Capabilities:
+ * - Chrono-sequenced Daily Schedule: organizes tasks into Day Outbound Sprints and Night Autonomous Sweeps.
+ * - Integrated Focus Sprint Timer: 25-minute Pomodoro focus timer with play/pause/reset.
+ * - Milestone Completion Velocity: calculates real-time progress and completion percentages.
+ * - Phase and Category Filters: slice schedule by Day/Night phases or functional tags (Interview Prep, Follow-up, etc.).
+ * - Direct Action Triggers: launches relevant workspaces (Flight Sim, Studio, Radar) directly from scheduled items.
+ */
+
 'use client';
 import { useState, useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
@@ -24,6 +36,9 @@ import {
   Check
 } from 'lucide-react';
 
+/**
+ * Data contract representing a single time-blocked execution slot.
+ */
 interface TimeBlock {
   id: string;
   time: string;
@@ -37,6 +52,9 @@ interface TimeBlock {
   impactScore: number;
 }
 
+/**
+ * Seed schedule demonstrating the dual-phase Day (Active Outbound) and Night (Autonomous Ingestion) lifecycle.
+ */
 const INITIAL_SCHEDULE: TimeBlock[] = [
   {
     id: 'tb-1',
@@ -112,6 +130,10 @@ const INITIAL_SCHEDULE: TimeBlock[] = [
   }
 ];
 
+/**
+ * TodayExecutionDeck Component
+ * Renders the personal command center for daily career execution and focus management.
+ */
 export default function TodayExecutionDeck() {
   const [schedule, setSchedule] = useState<TimeBlock[]>(INITIAL_SCHEDULE);
   const [activePhase, setActivePhase] = useState<'ALL' | 'DAY' | 'NIGHT'>('ALL');
@@ -122,6 +144,9 @@ export default function TodayExecutionDeck() {
   const [timerRunning, setTimerRunning] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(25 * 60);
 
+  /**
+   * Countdown interval driver for Pomodoro sprint timer.
+   */
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
     if (timerRunning && secondsLeft > 0) {
@@ -136,6 +161,9 @@ export default function TodayExecutionDeck() {
     };
   }, [timerRunning, secondsLeft]);
 
+  /**
+   * Formats seconds into MM:SS display string.
+   */
   const formatTimer = (secs: number) => {
     const m = Math.floor(secs / 60);
     const s = secs % 60;

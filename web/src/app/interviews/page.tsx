@@ -1,3 +1,15 @@
+/**
+ * @file interviews/page.tsx
+ * @description Interview Flight Simulator & War Room for DayNight Pilot.
+ * 
+ * Capabilities:
+ * - 4-Stage Ordeal Modules: System Design, Coding & Concurrency, Behavioral (STAR), and Executive Alignment.
+ * - Rubric Evaluation Vectors: Technical Depth, Architecture Trade-offs, STAR Communication, and System Scalability.
+ * - Pre-Flight Tactical Briefings: Glassdoor leaked question patterns, engineering blogs, and incident post-mortems.
+ * - Live AI Mock Interview Modal: interactive simulation session with conversational AI evaluating candidate responses.
+ * - Readiness Scores: real-time percentage readiness indicators per scheduled ordeal.
+ */
+
 'use client';
 import { useState } from 'react';
 import Sidebar from '@/components/Sidebar';
@@ -24,6 +36,9 @@ import {
   Activity
 } from 'lucide-react';
 
+/**
+ * Data contract representing an upcoming or completed technical interview round.
+ */
 interface InterviewItem {
   id: string;
   company: string;
@@ -38,6 +53,9 @@ interface InterviewItem {
   readinessScore: number;
 }
 
+/**
+ * Seed data for technical interview sessions across Tier-1 engineering organizations.
+ */
 const MOCK_INTERVIEWS: InterviewItem[] = [
   {
     id: 'int-1',
@@ -91,6 +109,10 @@ const MOCK_INTERVIEWS: InterviewItem[] = [
   }
 ];
 
+/**
+ * FlightSimulatorPage Component
+ * Renders scheduled ordeal dossiers, rubric scoring vectors, and the interactive mock modal.
+ */
 export default function FlightSimulatorPage() {
   const [interviews] = useState<InterviewItem[]>(MOCK_INTERVIEWS);
   const [selectedInterview, setSelectedInterview] = useState<InterviewItem>(MOCK_INTERVIEWS[0]);

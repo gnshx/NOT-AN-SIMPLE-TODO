@@ -1,3 +1,15 @@
+/**
+ * @file ai-review/page.tsx
+ * @description SOC AI Action Review Firewall & Human-in-the-Loop Governance for DayNight Pilot.
+ * 
+ * Capabilities:
+ * - OWASP ASVS Governance: Enforces human-in-the-loop authorization before side-effecting operations execute.
+ * - Parameter Mutation Diff Viewer: Renders precise visual diffs (- oldVal, + newVal) before any tool call mutations.
+ * - Cryptographic Audit Ledger: Assigns immutable SHA-256 transaction hashes to each candidate mutation.
+ * - Multi-Tier Risk Classification: LOW (routine reads/schedules), MEDIUM (status shifts), HIGH (outbound emails), CRITICAL (destructive).
+ * - Bulk Safe Approvals: 1-click batch authorization for high-confidence (>=90%) non-critical operations.
+ */
+
 'use client';
 import { useState } from 'react';
 import Sidebar from '@/components/Sidebar';
@@ -21,6 +33,9 @@ import {
   Check
 } from 'lucide-react';
 
+/**
+ * Data contract representing an autonomous AI operation awaiting human confirmation.
+ */
 interface AiActionItem {
   id: string;
   title: string;
@@ -36,6 +51,9 @@ interface AiActionItem {
   auditHash: string;
 }
 
+/**
+ * Seed operational actions illustrating human-in-the-loop review queue items.
+ */
 const INITIAL_ACTIONS: AiActionItem[] = [
   {
     id: 'act-101',
@@ -94,16 +112,28 @@ const INITIAL_ACTIONS: AiActionItem[] = [
   }
 ];
 
+/**
+ * AiGovernanceFirewallPage Component
+ * Provides an enterprise compliance deck to inspect, verify, and sign autonomous mutations.
+ */
 export default function AiGovernanceFirewallPage() {
   const [actions, setActions] = useState<AiActionItem[]>(INITIAL_ACTIONS);
   const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'>('PENDING');
 
+  /**
+   * Approves or rejects a specific AI action item.
+   * @param id - Action ID.
+   * @param newStatus - 'APPROVED' or 'REJECTED'.
+   */
   const handleAction = (id: string, newStatus: 'APPROVED' | 'REJECTED') => {
     setActions((prev) =>
       prev.map((item) => (item.id === id ? { ...item, status: newStatus } : item))
     );
   };
 
+  /**
+   * Batch authorizes all high-confidence safe actions (>= 90% confidence and not high-risk).
+   */
   const handleApproveAllSafe = () => {
     setActions((prev) =>
       prev.map((item) => (item.confidence >= 90 && item.riskLevel !== 'HIGH' ? { ...item, status: 'APPROVED' } : item))
