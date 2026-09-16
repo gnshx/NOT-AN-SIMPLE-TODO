@@ -59,8 +59,20 @@ export async function POST(req: Request) {
   try {
     const secret = req.headers.get('x-telegram-bot-api-secret-token');
     const expectedSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
-    if (expectedSecret && secret !== expectedSecret) {
-      return NextResponse.json({ error: 'Unauthorized webhook request' }, { status: 401 });
+
+    // Fail-closed enforcement: In production, webhook secret MUST be configured
+    if (process.env.NODE_ENV === 'production' && !expectedSecret) {
+      return NextResponse.json(
+        { error: 'Server misconfiguration: TELEGRAM_WEBHOOK_SECRET is not set.' },
+        { status: 500 }
+      );
+    }
+
+    // If a secret is configured on the server, reject missing or mismatched tokens
+    if (expectedSecret) {
+      if (!secret || secret !== expectedSecret) {
+        return NextResponse.json({ error: 'Unauthorized webhook request.' }, { status: 401 });
+      }
     }
 
     const rawBody = await req.json().catch(() => null);

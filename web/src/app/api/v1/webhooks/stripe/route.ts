@@ -11,7 +11,15 @@ export async function POST(request: Request) {
   try {
     const rawBody = await request.text();
     const signature = request.headers.get('stripe-signature');
-    const secret = process.env.STRIPE_WEBHOOK_SECRET || 'whsec_redacted_test_secret';
+    const secret = process.env.STRIPE_WEBHOOK_SECRET;
+
+    if (!secret) {
+      throw new AppError(
+        'Server misconfiguration: STRIPE_WEBHOOK_SECRET must be configured.',
+        500,
+        'MISCONFIGURED_WEBHOOK_SECRET'
+      );
+    }
 
     if (!signature) {
       throw new AppError('Missing stripe-signature header.', 400, 'INVALID_WEBHOOK_SIGNATURE');

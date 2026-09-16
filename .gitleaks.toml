@@ -8,7 +8,6 @@ paths = [
   '''README\.md'''
 ]
 regexes = [
-  '''dummy_ephemeral_test_secret_purged''',
   '''mock-test-key.*''',
   '''test_token_.*'''
 ]

@@ -13,9 +13,6 @@ jobs:
 
     env:
       NODE_ENV: test
-      ENCRYPTION_MASTER_KEY: "dummy_ephemeral_test_secret_purged"
-      AUTH_SECRET: "dummy_ephemeral_test_secret_purged"
-      NEXTAUTH_SECRET: "dummy_ephemeral_test_secret_purged"
 
     steps:
       - name: Checkout Code
@@ -28,6 +25,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
+
+      - name: Generate Dynamic Ephemeral Test Secrets
+        run: |
+          echo "ENCRYPTION_MASTER_KEY=$(openssl rand -hex 32)" >> $GITHUB_ENV
+          echo "AUTH_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
+          echo "NEXTAUTH_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
 
       - name: Setup Node.js Environment
         uses: actions/setup-node@v4
