@@ -1,7 +1,8 @@
 'use client';
 import { useState } from 'react';
 import Sidebar from '@/components/Sidebar';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 import {
   Compass,
   CheckCircle2,
@@ -14,7 +15,14 @@ import {
   FileText,
   Video,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  Radar,
+  Radio,
+  Search,
+  Filter,
+  Layers,
+  ArrowRight,
+  Sparkles
 } from 'lucide-react';
 
 interface Opportunity {
@@ -33,257 +41,382 @@ interface Opportunity {
   trustScore: number;
   matchedSkills: string[];
   missingSkills: string[];
-  recommendation: 'APPLY' | 'HIGH FIT' | 'RISK REVIEW';
+  recommendation: 'STRONG MATCH' | 'HIGH FIT' | 'RISK REVIEW';
+  dnsVerified: boolean;
+  hiringManager?: string;
+  sourceUrl?: string;
 }
 
 const MOCK_OPPORTUNITIES: Opportunity[] = [
   {
     id: 'opp-1',
-    company: 'Acme Corp',
-    role: 'Full Stack Engineer',
-    platform: 'LinkedIn',
-    location: 'Remote (Bengaluru / India)',
-    salary: '₹14–20 LPA',
-    skillMatch: 94,
-    experienceMatch: 88,
+    company: 'Anthropic',
+    role: 'Full Stack Infrastructure Engineer',
+    platform: 'Direct ATS',
+    location: 'Remote / SF',
+    salary: '$180,000–$240,000',
+    skillMatch: 96,
+    experienceMatch: 92,
     locationMatch: 100,
-    salaryMatch: 85,
-    overallScore: 91,
+    salaryMatch: 95,
+    overallScore: 94,
     scamRisk: 'LOW',
-    trustScore: 95,
-    matchedSkills: ['React', 'TypeScript', 'Node.js', 'PostgreSQL'],
-    missingSkills: ['Kubernetes'],
-    recommendation: 'APPLY'
+    trustScore: 99,
+    matchedSkills: ['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'Redis'],
+    missingSkills: ['Distributed Raft'],
+    recommendation: 'STRONG MATCH',
+    dnsVerified: true,
+    hiringManager: 'Elena Rostova (Head of Infra)'
   },
   {
     id: 'opp-2',
-    company: 'FinTech Stack',
-    role: 'Backend Systems Engineer',
-    platform: 'Wellfound',
-    location: 'Hybrid (Bengaluru)',
-    salary: '₹18–24 LPA',
-    skillMatch: 90,
-    experienceMatch: 84,
+    company: 'Stripe',
+    role: 'Staff Systems Engineer (Ledger Core)',
+    platform: 'Inbound Radar',
+    location: 'Remote (US/EU/India)',
+    salary: '₹45–65 LPA / $210k',
+    skillMatch: 92,
+    experienceMatch: 88,
     locationMatch: 95,
-    salaryMatch: 92,
-    overallScore: 89,
+    salaryMatch: 94,
+    overallScore: 91,
     scamRisk: 'LOW',
-    trustScore: 92,
-    matchedSkills: ['Python', 'FastAPI', 'PostgreSQL', 'Redis'],
-    missingSkills: ['AWS Lambda'],
-    recommendation: 'APPLY'
+    trustScore: 98,
+    matchedSkills: ['Python', 'Go', 'PostgreSQL', 'Lock-Free Systems'],
+    missingSkills: ['Sorbet Typechecker'],
+    recommendation: 'STRONG MATCH',
+    dnsVerified: true,
+    hiringManager: 'Marcus Vance (Staff Principal)'
   },
   {
     id: 'opp-3',
-    company: 'CloudVentures',
-    role: 'AI / ML Engineer',
-    platform: 'Unstop',
-    location: 'Remote',
-    salary: '₹16–22 LPA',
-    skillMatch: 85,
-    experienceMatch: 80,
-    locationMatch: 100,
+    company: 'FinTech Stack',
+    role: 'High-Throughput Backend Architect',
+    platform: 'Wellfound',
+    location: 'Bengaluru / Hybrid',
+    salary: '₹28–38 LPA',
+    skillMatch: 88,
+    experienceMatch: 84,
+    locationMatch: 90,
     salaryMatch: 88,
+    overallScore: 87,
+    scamRisk: 'LOW',
+    trustScore: 94,
+    matchedSkills: ['FastAPI', 'Redis Cluster', 'Kafka', 'Postgres'],
+    missingSkills: ['eBPF Observability'],
+    recommendation: 'HIGH FIT',
+    dnsVerified: true
+  },
+  {
+    id: 'opp-4',
+    company: 'CloudVentures',
+    role: 'Autonomous Agent Platform Engineer',
+    platform: 'Unstop Radar',
+    location: 'Remote',
+    salary: '₹22–30 LPA',
+    skillMatch: 85,
+    experienceMatch: 82,
+    locationMatch: 100,
+    salaryMatch: 85,
     overallScore: 86,
     scamRisk: 'LOW',
-    trustScore: 88,
-    matchedSkills: ['Python', 'PyTorch', 'Gemini API', 'Vector DB'],
-    missingSkills: ['MLOps / Kubeflow'],
-    recommendation: 'HIGH FIT'
+    trustScore: 90,
+    matchedSkills: ['Python', 'PyTorch', 'Gemini Live', 'Vector DBs'],
+    missingSkills: ['Kubeflow Pipelines'],
+    recommendation: 'HIGH FIT',
+    dnsVerified: true
   }
 ];
 
-export default function OpportunitiesPage() {
+export default function OpportunitiesRadar() {
   const [opportunities] = useState<Opportunity[]>(MOCK_OPPORTUNITIES);
-  const [selectedOpp, setSelectedOpp] = useState<Opportunity | null>(MOCK_OPPORTUNITIES[0]);
+  const [selectedOpp, setSelectedOpp] = useState<Opportunity>(MOCK_OPPORTUNITIES[0]);
+  const [filterTag, setFilterTag] = useState<string>('ALL');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+
+  const filteredOpps = opportunities.filter((opp) => {
+    const matchesSearch =
+      opp.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      opp.role.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesFilter =
+      filterTag === 'ALL' ||
+      (filterTag === 'HIGH_FIT' && opp.overallScore >= 90) ||
+      (filterTag === 'REMOTE' && opp.location.toLowerCase().includes('remote'));
+    return matchesSearch && matchesFilter;
+  });
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-obsidian)', color: 'var(--text-primary)' }}>
       <Sidebar />
 
-      <main className="workspace">
-        <div className="page-kicker">
-          <Compass size={14} />
-          JOB INTELLIGENCE RADAR
-        </div>
-
-        <div className="page-heading">
-          <div>
-            <h1>Opportunity Radar</h1>
-            <p>AI-driven opportunity scoring, skill fit breakdown, and trust verification.</p>
-          </div>
-          <div className="task-count">
-            Radar Active: <strong>{opportunities.length} High-Match Leads</strong>
-          </div>
-        </div>
-
-        {/* Responsive Grid Layout */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px', alignItems: 'start' }}>
-          {/* Left Column - List of Opportunities */}
-          <div style={{ display: 'grid', gap: '16px' }}>
-            {opportunities.map((opp, idx) => (
-              <motion.div
-                key={opp.id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.05 }}
-                className="glass-card"
-                style={{
-                  padding: '20px',
-                  borderRadius: '14px',
-                  border: selectedOpp?.id === opp.id ? '2px solid var(--accent-cobalt)' : '1px solid var(--border-subtle)',
-                  cursor: 'pointer'
-                }}
-                onClick={() => setSelectedOpp(opp)}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px', flexWrap: 'wrap', gap: '10px' }}>
-                  <div>
-                    <span
-                      style={{
-                        fontFamily: 'var(--font-mono)',
-                        fontSize: '0.68rem',
-                        fontWeight: 700,
-                        color: 'var(--text-muted)',
-                        letterSpacing: '0.05em'
-                      }}
-                    >
-                      {opp.platform.toUpperCase()} • {opp.location}
-                    </span>
-                    <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '2px', fontFamily: 'var(--font-display)' }}>
-                      {opp.company}
-                    </h3>
-                    <div style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', fontWeight: 600 }}>{opp.role}</div>
-                  </div>
-
-                  {/* Overall Match Badge */}
-                  <div style={{ textAlign: 'right' }}>
-                    <div
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        padding: '4px 12px',
-                        borderRadius: '999px',
-                        background: 'rgba(59, 130, 246, 0.14)',
-                        border: '1px solid rgba(59, 130, 246, 0.35)',
-                        color: '#93c5fd',
-                        fontFamily: 'var(--font-display)',
-                        fontWeight: 800,
-                        fontSize: '1.05rem'
-                      }}
-                    >
-                      <Zap size={14} style={{ color: 'var(--accent-cyan)' }} /> {opp.overallScore}% FIT
-                    </div>
-                    <div style={{ fontSize: '0.72rem', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', marginTop: '4px' }}>{opp.salary}</div>
-                  </div>
-                </div>
-
-                {/* Skill Chips */}
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '14px' }}>
-                  {opp.matchedSkills.map((sk) => (
-                    <span
-                      key={sk}
-                      style={{
-                        fontSize: '0.72rem',
-                        fontFamily: 'var(--font-mono)',
-                        padding: '3px 8px',
-                        borderRadius: '4px',
-                        background: 'rgba(16, 185, 129, 0.12)',
-                        border: '1px solid rgba(16, 185, 129, 0.3)',
-                        color: '#34d399'
-                      }}
-                    >
-                      ✓ {sk}
-                    </span>
-                  ))}
-                  {opp.missingSkills.map((sk) => (
-                    <span
-                      key={sk}
-                      style={{
-                        fontSize: '0.72rem',
-                        fontFamily: 'var(--font-mono)',
-                        padding: '3px 8px',
-                        borderRadius: '4px',
-                        background: 'rgba(245, 158, 11, 0.12)',
-                        border: '1px solid rgba(245, 158, 11, 0.3)',
-                        color: '#fbbf24'
-                      }}
-                    >
-                      ⚠ Missing: {sk}
-                    </span>
-                  ))}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Right Column - Deep Match & Action Panel */}
-          {selectedOpp && (
-            <div className="glass-card" style={{ padding: '24px', borderRadius: '14px', position: 'sticky', top: '16px' }}>
-              <div style={{ paddingBottom: '16px', borderBottom: '1px solid var(--border-subtle)', marginBottom: '20px' }}>
-                <div style={{ fontSize: '0.72rem', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
-                  // DETAILED AI EVALUATION SHEET
-                </div>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '4px', fontFamily: 'var(--font-display)' }}>
-                  {selectedOpp.company}
-                </h2>
-                <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>{selectedOpp.role}</div>
-              </div>
-
-              {/* Match Score Matrix */}
-              <div style={{ display: 'grid', gap: '12px', marginBottom: '24px' }}>
-                {[
-                  { label: 'Skill Fit', val: selectedOpp.skillMatch },
-                  { label: 'Experience Alignment', val: selectedOpp.experienceMatch },
-                  { label: 'Location Match', val: selectedOpp.locationMatch },
-                  { label: 'Salary Match', val: selectedOpp.salaryMatch }
-                ].map((m) => (
-                  <div key={m.label}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '4px' }}>
-                      <span style={{ color: 'var(--text-secondary)' }}>{m.label}</span>
-                      <strong style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>{m.val}%</strong>
-                    </div>
-                    <div className="progress-bar">
-                      <div className="progress-fill" style={{ width: `${m.val}%`, background: 'var(--accent-cobalt)' }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Trust Score & Scam Check */}
-              <div
-                style={{
-                  padding: '14px 16px',
-                  borderRadius: '10px',
-                  background: 'var(--bg-surface-2)',
-                  border: '1px solid var(--border-subtle)',
-                  marginBottom: '24px'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <ShieldCheck size={16} style={{ color: 'var(--accent-emerald)' }} /> Company Trust Rating
-                  </span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', fontWeight: 800, color: 'var(--accent-emerald)' }}>
-                    {selectedOpp.trustScore}/100 ({selectedOpp.scamRisk} RISK)
-                  </span>
-                </div>
-                <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '6px' }}>
-                  Verified corporate domain, active Glassdoor/LinkedIn presence, no scam reports detected.
-                </div>
-              </div>
-
-              {/* CTAs */}
-              <div style={{ display: 'grid', gap: '10px' }}>
-                <button className="primary-button" style={{ width: '100%' }}>
-                  <FileText size={16} /> Tailor Resume for {selectedOpp.company}
-                </button>
-                <button className="btn-neural">
-                  <Video size={16} /> Prepare Interview Workspace
-                </button>
-              </div>
+      <main className="workspace" style={{ paddingBottom: '80px' }}>
+        {/* Status Header */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            background: 'var(--bg-surface-1)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: '12px',
+            padding: '10px 18px',
+            marginBottom: '24px',
+            flexWrap: 'wrap',
+            gap: 12
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span className="sentinel-pulse" style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent-cyan)', display: 'inline-block' }} />
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '0.08em' }}>
+                SIGNAL RADAR // INBOUND TELEMETRY
+              </span>
             </div>
-          )}
+            <span style={{ color: 'var(--text-muted)' }}>|</span>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--accent-emerald)' }}>
+              SWEEP FREQUENCY: CONTINUOUS
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+              {opportunities.length} High-Yield Signals Locked
+            </span>
+          </div>
+        </div>
+
+        {/* Hero Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
+          <div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.74rem', color: 'var(--accent-cyan)', letterSpacing: '0.1em', marginBottom: 4 }}>
+              AUTONOMOUS INBOUND & ATS INTERROGATION
+            </div>
+            <h1 className="hero-title" style={{ fontSize: '2.4rem', margin: 0 }}>
+              OPPORTUNITY <span className="accent">SIGNAL RADAR.</span>
+            </h1>
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.92rem', color: 'var(--text-secondary)', marginTop: 6, maxWidth: 640 }}>
+              Multi-vector fit evaluation, DNS authority verification, and ATS matching heuristics calculated before submission.
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              onClick={() => setFilterTag('ALL')}
+              className={`filter-pill ${filterTag === 'ALL' ? 'active' : ''}`}
+            >
+              All Signals
+            </button>
+            <button
+              onClick={() => setFilterTag('HIGH_FIT')}
+              className={`filter-pill ${filterTag === 'HIGH_FIT' ? 'active' : ''}`}
+            >
+              90%+ Fit Only
+            </button>
+            <button
+              onClick={() => setFilterTag('REMOTE')}
+              className={`filter-pill ${filterTag === 'REMOTE' ? 'active' : ''}`}
+            >
+              Remote Only
+            </button>
+          </div>
+        </div>
+
+        {/* 2-Column Split: Radar List (Left) and Deep Vector Inspector (Right) */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(360px, 1fr)', gap: 24, alignItems: 'start' }}>
+          {/* Left Column: List of Detected Signals */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {filteredOpps.map((opp, idx) => {
+              const isSelected = selectedOpp.id === opp.id;
+
+              return (
+                <motion.div
+                  key={opp.id}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  onClick={() => setSelectedOpp(opp)}
+                  style={{
+                    padding: '18px 20px',
+                    borderRadius: 14,
+                    background: isSelected ? 'rgba(59, 130, 246, 0.08)' : 'var(--bg-surface-1)',
+                    border: isSelected ? '1px solid var(--accent-cobalt)' : '1px solid var(--border-subtle)',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                  className="table-row-hover"
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8, flexWrap: 'wrap', gap: 10 }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--accent-cyan)', fontWeight: 700 }}>
+                          {opp.platform.toUpperCase()}
+                        </span>
+                        <span style={{ color: 'var(--text-muted)' }}>•</span>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--text-muted)' }}>
+                          {opp.location}
+                        </span>
+                      </div>
+                      <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0 2px' }}>
+                        {opp.company}
+                      </h3>
+                      <div style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                        {opp.role}
+                      </div>
+                    </div>
+
+                    <div style={{ textAlign: 'right' }}>
+                      <div
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          padding: '4px 10px',
+                          borderRadius: 999,
+                          background: 'rgba(59, 130, 246, 0.12)',
+                          border: '1px solid rgba(59, 130, 246, 0.3)',
+                          color: 'var(--accent-cyan)',
+                          fontFamily: 'var(--font-mono)',
+                          fontWeight: 800,
+                          fontSize: '0.92rem'
+                        }}
+                      >
+                        <Zap size={13} /> {opp.overallScore}% MATCH
+                      </div>
+                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: 4 }}>
+                        {opp.salary}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Matched Skill Tags */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12 }}>
+                    {opp.matchedSkills.map((sk) => (
+                      <span
+                        key={sk}
+                        style={{
+                          fontSize: '0.68rem',
+                          fontFamily: 'var(--font-mono)',
+                          padding: '2px 8px',
+                          borderRadius: 4,
+                          background: 'rgba(52, 211, 153, 0.1)',
+                          border: '1px solid rgba(52, 211, 153, 0.25)',
+                          color: '#34d399'
+                        }}
+                      >
+                        ✓ {sk}
+                      </span>
+                    ))}
+                    {opp.missingSkills.map((sk) => (
+                      <span
+                        key={sk}
+                        style={{
+                          fontSize: '0.68rem',
+                          fontFamily: 'var(--font-mono)',
+                          padding: '2px 8px',
+                          borderRadius: 4,
+                          background: 'rgba(251, 191, 36, 0.1)',
+                          border: '1px solid rgba(251, 191, 36, 0.25)',
+                          color: '#fbbf24'
+                        }}
+                      >
+                        ⚠ Gap: {sk}
+                      </span>
+                    ))}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {/* Right Column: Deep Radar Vector Inspector */}
+          <div className="glass-card" style={{ padding: '24px', borderRadius: 16, position: 'sticky', top: 16 }}>
+            <div style={{ paddingBottom: 16, borderBottom: '1px solid var(--border-subtle)', marginBottom: 20 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--text-muted)', letterSpacing: '0.06em' }}>
+                  // RADAR INTERROGATION REPORT
+                </span>
+                <span className="badge-risk-low" style={{ fontSize: '0.65rem' }}>
+                  <ShieldCheck size={11} /> {selectedOpp.trustScore}% DNS Verified
+                </span>
+              </div>
+              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: 8, margin: 0 }}>
+                {selectedOpp.company}
+              </h2>
+              <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: 2 }}>
+                {selectedOpp.role}
+              </div>
+              {selectedOpp.hiringManager && (
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.74rem', color: 'var(--accent-cyan)', marginTop: 6 }}>
+                  Direct Lead: {selectedOpp.hiringManager}
+                </div>
+              )}
+            </div>
+
+            {/* 4-Vector Breakdown Bars */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 24 }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--text-muted)' }}>
+                4-VECTOR ALIGNMENT COEFFICIENTS
+              </div>
+
+              {[
+                { label: 'Skill Architecture Fit', val: selectedOpp.skillMatch, color: 'var(--accent-cyan)' },
+                { label: 'Seniority & Experience Match', val: selectedOpp.experienceMatch, color: 'var(--accent-cobalt)' },
+                { label: 'Geographic / Timezone Compliance', val: selectedOpp.locationMatch, color: 'var(--accent-emerald)' },
+                { label: 'Compensation Band Target', val: selectedOpp.salaryMatch, color: 'var(--accent-violet)' },
+              ].map((v) => (
+                <div key={v.label}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.76rem', marginBottom: 4 }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>{v.label}</span>
+                    <strong style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{v.val}%</strong>
+                  </div>
+                  <div className="progress-bar">
+                    <div className="progress-fill" style={{ width: `${v.val}%`, background: v.color }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Trust & Fraud Audit Shield */}
+            <div
+              style={{
+                padding: '14px 16px',
+                borderRadius: 10,
+                background: 'var(--bg-surface-2)',
+                border: '1px solid var(--border-subtle)',
+                marginBottom: 24
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <ShieldCheck size={16} style={{ color: 'var(--accent-emerald)' }} /> Corporate Legitimacy Score
+                </span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.76rem', fontWeight: 800, color: 'var(--accent-emerald)' }}>
+                  {selectedOpp.trustScore}/100 • SAFE
+                </span>
+              </div>
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.76rem', color: 'var(--text-muted)', marginTop: 6, lineHeight: 1.45, margin: '6px 0 0' }}>
+                TLS certificate signed by Google Trust Services. Domain registered in 2011. Verified Glassdoor salary records match current band.
+              </p>
+            </div>
+
+            {/* Action CTA Buttons */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+              <Link
+                href="/resume"
+                className="btn-secondary"
+                style={{ justifyContent: 'center', padding: '10px', fontSize: '0.78rem', gap: 6 }}
+              >
+                <FileText size={14} /> Tailor Resume
+              </Link>
+              <Link
+                href="/interviews"
+                className="btn-primary"
+                style={{ justifyContent: 'center', padding: '10px', fontSize: '0.78rem', gap: 6 }}
+              >
+                <Zap size={14} /> Flight Simulator
+              </Link>
+            </div>
+          </div>
         </div>
       </main>
     </div>

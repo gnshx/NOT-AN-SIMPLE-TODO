@@ -58,16 +58,15 @@ export default function Sidebar() {
   ];
 
   const mainNav = [
-    { href: '/', label: 'Home', icon: LayoutDashboard, tag: null },
-    { href: '/today', label: 'Today', icon: Calendar, tag: 'Execution' },
+    { href: '/', label: 'Mission Control', icon: LayoutDashboard, tag: null },
+    { href: '/today', label: 'Today Execution', icon: Calendar, tag: 'Focus' },
     { href: '/ai-review', label: 'AI Review Queue', icon: Sparkles, tag: '3 Pending' },
-    { href: '/pipeline', label: 'Career Pipeline', icon: Briefcase, tag: 'Pipeline' },
-    { href: '/opportunities', label: 'Opportunities', icon: Compass, tag: 'Radar' },
-    { href: '/resume', label: 'Resume Workspace', icon: FileText, tag: 'ATS' },
-    { href: '/interviews', label: 'Interview Center', icon: Video, tag: 'Coach' },
+    { href: '/pipeline', label: 'Career Pipeline', icon: Briefcase, tag: 'Active' },
+    { href: '/opportunities', label: 'Signal Radar', icon: Compass, tag: 'Trust' },
+    { href: '/resume', label: 'Resume Studio', icon: FileText, tag: 'ATS 94%' },
+    { href: '/interviews', label: 'Flight Simulator', icon: Video, tag: 'Coach' },
     { href: '/intelligence', label: 'Career Graph', icon: BarChart3, tag: 'Analytics' },
-    { href: '/tasks', label: 'Tasks', icon: CheckSquare, tag: null },
-    { href: '/settings/organization', label: 'Organization & RBAC', icon: Building2, tag: 'Enterprise' }
+    { href: '/settings/organization', label: 'RBAC & Security', icon: Building2, tag: 'Admin' }
   ];
 
   return (

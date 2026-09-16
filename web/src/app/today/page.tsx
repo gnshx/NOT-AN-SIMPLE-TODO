@@ -1,67 +1,146 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 import {
   Calendar,
   Zap,
   CheckCircle2,
   Clock,
-  AlertCircle,
+  Sun,
+  Moon,
+  Play,
+  Pause,
+  RotateCcw,
   Sparkles,
   ArrowRight,
-  Mail,
   Video,
-  FileText
+  FileText,
+  Mail,
+  Flame,
+  ShieldCheck,
+  Tag,
+  Check
 } from 'lucide-react';
 
 interface TimeBlock {
   id: string;
   time: string;
   title: string;
-  category: 'Interview Prep' | 'Application' | 'Follow-up' | 'Project';
-  priority: 'HIGH' | 'MEDIUM' | 'LOW';
+  category: 'Interview Prep' | 'Application' | 'Follow-up' | 'Deep Work' | 'Autonomous';
+  priority: 'CRITICAL' | 'HIGH' | 'ROUTINE';
   completed: boolean;
+  phase: 'DAY' | 'NIGHT';
+  actionLabel?: string;
+  actionUrl?: string;
+  impactScore: number;
 }
 
 const INITIAL_SCHEDULE: TimeBlock[] = [
   {
     id: 'tb-1',
     time: '09:00 AM - 10:15 AM',
-    title: 'Google Technical Interview Preparation (System Design & Concurrency)',
+    title: 'Google Technical Interview Simulator: Distributed Consensus & Raft',
     category: 'Interview Prep',
-    priority: 'HIGH',
-    completed: true
+    priority: 'CRITICAL',
+    completed: true,
+    phase: 'DAY',
+    actionLabel: 'Open Flight Sim',
+    actionUrl: '/interviews',
+    impactScore: 95
   },
   {
     id: 'tb-2',
-    time: '10:30 AM - 11:00 AM',
-    title: 'Draft & Send Follow-up Email to Stripe Recruiter Sarah',
+    time: '10:30 AM - 11:15 AM',
+    title: 'Dispatch High-Priority Follow-up to Stripe Staff Recruiter',
     category: 'Follow-up',
     priority: 'HIGH',
-    completed: false
+    completed: false,
+    phase: 'DAY',
+    actionLabel: 'Review AI Draft',
+    actionUrl: '/ai-review',
+    impactScore: 88
   },
   {
     id: 'tb-3',
-    time: '11:15 AM - 01:00 PM',
-    title: 'Submit Tailored Applications for Acme Corp & FinTech Stack',
+    time: '11:30 AM - 01:00 PM',
+    title: 'Tailor Variant #4 for Datadog Distributed Systems Engineer Position',
     category: 'Application',
-    priority: 'MEDIUM',
-    completed: false
+    priority: 'HIGH',
+    completed: false,
+    phase: 'DAY',
+    actionLabel: 'Launch Studio',
+    actionUrl: '/resume',
+    impactScore: 84
   },
   {
     id: 'tb-4',
     time: '02:30 PM - 04:30 PM',
-    title: 'Complete Distributed Systems Portfolio Project Features',
-    category: 'Project',
-    priority: 'MEDIUM',
-    completed: false
+    title: 'Deep Architecture Sprint: Raft Protocol Edge Simulation Engine',
+    category: 'Deep Work',
+    priority: 'HIGH',
+    completed: false,
+    phase: 'DAY',
+    actionLabel: 'View Targets',
+    actionUrl: '/pipeline',
+    impactScore: 90
+  },
+  {
+    id: 'tb-5',
+    time: '09:00 PM - 10:30 PM',
+    title: 'Night Sweep: Execute Autonomous Radar Scrape for Level 5 Backend Roles',
+    category: 'Autonomous',
+    priority: 'ROUTINE',
+    completed: false,
+    phase: 'NIGHT',
+    actionLabel: 'Signal Radar',
+    actionUrl: '/opportunities',
+    impactScore: 78
+  },
+  {
+    id: 'tb-6',
+    time: '10:45 PM - 11:30 PM',
+    title: 'Autonomous Ingestion & Defense Audit of Inbound Recruiter Messages',
+    category: 'Autonomous',
+    priority: 'ROUTINE',
+    completed: false,
+    phase: 'NIGHT',
+    actionLabel: 'AI Firewall',
+    actionUrl: '/ai-review',
+    impactScore: 72
   }
 ];
 
-export default function TodayPage() {
+export default function TodayExecutionDeck() {
   const [schedule, setSchedule] = useState<TimeBlock[]>(INITIAL_SCHEDULE);
+  const [activePhase, setActivePhase] = useState<'ALL' | 'DAY' | 'NIGHT'>('ALL');
+  const [activeCategory, setActiveCategory] = useState<string>('ALL');
   const [isPlanning, setIsPlanning] = useState(false);
+
+  // Focus Timer state (25m Pomodoro)
+  const [timerRunning, setTimerRunning] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState(25 * 60);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+    if (timerRunning && secondsLeft > 0) {
+      interval = setInterval(() => {
+        setSecondsLeft((s) => s - 1);
+      }, 1000);
+    } else if (secondsLeft === 0) {
+      setTimerRunning(false);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [timerRunning, secondsLeft]);
+
+  const formatTimer = (secs: number) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  };
 
   const toggleTask = (id: string) => {
     setSchedule((prev) =>
@@ -69,167 +148,352 @@ export default function TodayPage() {
     );
   };
 
-  const handlePlanMyDay = () => {
+  const handleAiOptimization = () => {
     setIsPlanning(true);
     setTimeout(() => {
       setIsPlanning(false);
-    }, 800);
+    }, 750);
   };
 
+  const filteredTasks = schedule.filter((t) => {
+    const phaseMatch = activePhase === 'ALL' || t.phase === activePhase;
+    const catMatch = activeCategory === 'ALL' || t.category === activeCategory;
+    return phaseMatch && catMatch;
+  });
+
   const completedCount = schedule.filter((s) => s.completed).length;
+  const completionPercentage = Math.round((completedCount / schedule.length) * 100);
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-obsidian)', color: 'var(--text-primary)' }}>
       <Sidebar />
 
-      <main className="workspace">
-        <div className="page-kicker">
-          <Calendar size={14} />
-          PERSONAL DAILY COMMAND CENTER
-        </div>
-
-        <div className="page-heading">
-          <div>
-            <h1>Good Morning 👋</h1>
-            <p>Your intelligent time-blocked schedule and high-impact career priorities for today.</p>
-          </div>
-          <button className="primary-button" onClick={handlePlanMyDay} disabled={isPlanning}>
-            <Zap size={16} style={{ animation: isPlanning ? 'spin 1s linear infinite' : 'none' }} />
-            {isPlanning ? 'AI Planning Schedule...' : 'Plan My Day with AI'}
-          </button>
-        </div>
-
-        {/* Priority Highlights Strip */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-          <div className="glass-card" style={{ padding: '18px', borderRadius: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'var(--text-muted)', fontSize: '0.74rem', fontFamily: 'var(--font-mono)' }}>
-              <span>DAILY PROGRESS</span>
-              <CheckCircle2 size={16} style={{ color: 'var(--accent-emerald)' }} />
+      <main className="workspace" style={{ paddingBottom: '80px' }}>
+        {/* Sub-Header / Flight Deck Status */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            background: 'var(--bg-surface-1)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: '12px',
+            padding: '10px 18px',
+            marginBottom: '24px',
+            flexWrap: 'wrap',
+            gap: 12
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span className="sentinel-pulse" style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent-cyan)', display: 'inline-block' }} />
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '0.08em' }}>
+                DAILY EXECUTION PROTOCOL
+              </span>
             </div>
-            <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '6px' }}>
-              {completedCount} / {schedule.length} <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Tasks Done</span>
-            </div>
-            <div className="progress-bar" style={{ marginTop: '10px' }}>
-              <div className="progress-fill" style={{ width: `${(completedCount / schedule.length) * 100}%`, background: 'var(--accent-emerald)' }} />
-            </div>
-          </div>
-
-          <div className="glass-card" style={{ padding: '18px', borderRadius: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'var(--text-muted)', fontSize: '0.74rem', fontFamily: 'var(--font-mono)' }}>
-              <span>UPCOMING INTERVIEW</span>
-              <Video size={16} style={{ color: 'var(--accent-cobalt)' }} />
-            </div>
-            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '6px' }}>
-              Google Technical Round
-            </div>
-            <div style={{ fontSize: '0.78rem', color: 'var(--accent-cobalt)', fontWeight: 600, marginTop: '4px' }}>
-              Friday at 4:00 PM IST (In 2 days)
-            </div>
-          </div>
-
-          <div className="glass-card" style={{ padding: '18px', borderRadius: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'var(--text-muted)', fontSize: '0.74rem', fontFamily: 'var(--font-mono)' }}>
-              <span>AI PROPOSED ACTIONS</span>
-              <Sparkles size={16} style={{ color: 'var(--accent-amber)' }} />
-            </div>
-            <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--accent-amber)', marginTop: '6px' }}>
-              3 Actions <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Pending Review</span>
-            </div>
-            <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-              1 status change • 1 draft • 1 prep task
-            </div>
-          </div>
-        </div>
-
-        {/* Time-blocked Schedule List */}
-        <div className="glass-card" style={{ padding: '24px', borderRadius: '14px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
-            <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)' }}>Today's Time-Blocked Schedule</h2>
-            <span style={{ fontSize: '0.76rem', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
-              OPTIMIZED BY AI PILOT
+            <span style={{ color: 'var(--text-muted)' }}>|</span>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--accent-emerald)' }}>
+              ENERGY: PEAK FOCUS
             </span>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {schedule.map((item) => (
-              <motion.div
-                key={item.id}
-                layout
-                onClick={() => toggleTask(item.id)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '16px',
-                  padding: '14px 18px',
-                  borderRadius: '10px',
-                  background: item.completed ? 'rgba(255, 255, 255, 0.02)' : 'var(--bg-surface-2)',
-                  border: '1px solid var(--border-subtle)',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                <div
-                  style={{
-                    width: '20px',
-                    height: '20px',
-                    borderRadius: '6px',
-                    border: item.completed ? 'none' : '2px solid var(--text-muted)',
-                    background: item.completed ? 'var(--accent-emerald)' : 'transparent',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#ffffff',
-                    flexShrink: 0
-                  }}
-                >
-                  {item.completed && <CheckCircle2 size={16} />}
-                </div>
+          {/* Phase Filter Buttons */}
+          <div style={{ display: 'flex', gap: 6 }}>
+            <button
+              onClick={() => setActivePhase('ALL')}
+              className={`filter-pill ${activePhase === 'ALL' ? 'active' : ''}`}
+            >
+              Full Cycle
+            </button>
+            <button
+              onClick={() => setActivePhase('DAY')}
+              className={`filter-pill ${activePhase === 'DAY' ? 'active' : ''}`}
+              style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+            >
+              <Sun size={12} style={{ color: '#fbbf24' }} /> Day Sprint
+            </button>
+            <button
+              onClick={() => setActivePhase('NIGHT')}
+              className={`filter-pill ${activePhase === 'NIGHT' ? 'active' : ''}`}
+              style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+            >
+              <Moon size={12} style={{ color: 'var(--accent-violet)' }} /> Night Radar
+            </button>
+          </div>
+        </div>
 
-                <div style={{ flex: 1, minWidth: 0 }}>
+        {/* Page Hero */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
+          <div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.74rem', color: 'var(--accent-cyan)', letterSpacing: '0.1em', marginBottom: 4 }}>
+              CHRONO-SEQUENCED CADENCE // EXECUTION ENGINE
+            </div>
+            <h1 className="hero-title" style={{ fontSize: '2.4rem', margin: 0 }}>
+              TODAY'S <span className="accent">TACTICAL SPRINT.</span>
+            </h1>
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.92rem', color: 'var(--text-secondary)', marginTop: 6, maxWidth: 640 }}>
+              Time-blocked execution slots engineered to maximize interviewer conversion and high-yield outbound velocity.
+            </p>
+          </div>
+
+          <button
+            onClick={handleAiOptimization}
+            className="btn-primary"
+            style={{ padding: '9px 16px', fontSize: '0.82rem', gap: 8 }}
+            disabled={isPlanning}
+          >
+            <Zap size={14} style={{ animation: isPlanning ? 'spin 0.8s linear infinite' : 'none' }} />
+            {isPlanning ? 'Re-optimizing Cadence...' : 'Auto-Balance Schedule'}
+          </button>
+        </div>
+
+        {/* 3-Column Tactical Top Dashboard */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16, marginBottom: 24 }}>
+          {/* Daily Completion Velocity */}
+          <div className="glass-card" style={{ padding: '20px', borderRadius: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--text-muted)', letterSpacing: '0.06em' }}>
+                COMPLETION VELOCITY
+              </span>
+              <Flame size={15} style={{ color: 'var(--accent-amber)' }} />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+              <div className="stat-numeral" style={{ color: 'var(--text-primary)', fontSize: '2.2rem' }}>
+                {completionPercentage}%
+              </div>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                ({completedCount}/{schedule.length} Milestones)
+              </span>
+            </div>
+            {/* Progress Bar */}
+            <div className="progress-bar" style={{ marginTop: 12 }}>
+              <div
+                className="progress-fill"
+                style={{
+                  width: `${completionPercentage}%`,
+                  background: 'linear-gradient(90deg, var(--accent-cobalt), var(--accent-cyan))'
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Integrated Sprint Focus Timer */}
+          <div
+            className="glass-card"
+            style={{
+              padding: '20px',
+              borderRadius: 12,
+              background: 'radial-gradient(ellipse at top right, rgba(59,130,246,0.06) 0%, var(--bg-surface-1) 80%)',
+              border: timerRunning ? '1px solid rgba(59,130,246,0.4)' : '1px solid var(--border-subtle)'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--text-muted)', letterSpacing: '0.06em' }}>
+                FOCUS SPRINT TIMER
+              </span>
+              <Clock size={15} style={{ color: timerRunning ? 'var(--accent-cyan)' : 'var(--text-muted)' }} />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div className="stat-numeral" style={{ color: timerRunning ? 'var(--accent-cyan)' : 'var(--text-primary)', fontSize: '2.2rem' }}>
+                {formatTimer(secondsLeft)}
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button
+                  onClick={() => setTimerRunning(!timerRunning)}
+                  className="btn-primary"
+                  style={{ padding: '6px 12px', fontSize: '0.75rem', gap: 4 }}
+                >
+                  {timerRunning ? <Pause size={12} /> : <Play size={12} />}
+                  {timerRunning ? 'Pause' : 'Start'}
+                </button>
+                <button
+                  onClick={() => {
+                    setTimerRunning(false);
+                    setSecondsLeft(25 * 60);
+                  }}
+                  className="btn-secondary"
+                  style={{ padding: '6px 10px', fontSize: '0.75rem' }}
+                  title="Reset 25m"
+                >
+                  <RotateCcw size={12} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* AI Autonomous Queue Status */}
+          <div className="glass-card" style={{ padding: '20px', borderRadius: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--text-muted)', letterSpacing: '0.06em' }}>
+                NIGHT RADAR PIPELINE
+              </span>
+              <Sparkles size={15} style={{ color: 'var(--accent-violet)' }} />
+            </div>
+            <div className="stat-numeral" style={{ color: 'var(--accent-violet)', fontSize: '2.2rem' }}>
+              Armed
+            </div>
+            <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.76rem', color: 'var(--text-secondary)', marginTop: 4 }}>
+              Next execution window starts at 21:00 (Scraping 4 sources).
+            </div>
+          </div>
+        </div>
+
+        {/* Category Filters Bar */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16, overflowX: 'auto', paddingBottom: 4 }}>
+          {['ALL', 'Interview Prep', 'Follow-up', 'Application', 'Deep Work', 'Autonomous'].map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`filter-pill ${activeCategory === cat ? 'active' : ''}`}
+              style={{ fontSize: '0.72rem', whiteSpace: 'nowrap' }}
+            >
+              {cat.toUpperCase()}
+            </button>
+          ))}
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-muted)', marginLeft: 'auto', alignSelf: 'center' }}>
+            Showing {filteredTasks.length} Execution Blocks
+          </span>
+        </div>
+
+        {/* Time-Blocked Interactive Task List */}
+        <div className="glass-card" style={{ borderRadius: 14, overflow: 'hidden' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '44px 170px 1fr 110px 140px',
+              padding: '12px 18px',
+              background: 'var(--bg-surface-2)',
+              borderBottom: '1px solid var(--border-subtle)',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.68rem',
+              color: 'var(--text-muted)',
+              letterSpacing: '0.06em'
+            }}
+          >
+            <span></span>
+            <span>TIME WINDOW</span>
+            <span>OPERATIONAL OBJECTIVE</span>
+            <span>PRIORITY</span>
+            <span style={{ textAlign: 'right' }}>ACTION TRIGGER</span>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {filteredTasks.map((task, idx) => {
+              const priorityColor =
+                task.priority === 'CRITICAL' ? '#f87171' : task.priority === 'HIGH' ? '#fbbf24' : '#94a3b8';
+
+              return (
+                <motion.div
+                  key={task.id}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.04 }}
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '44px 170px 1fr 110px 140px',
+                    alignItems: 'center',
+                    padding: '14px 18px',
+                    borderBottom: '1px solid var(--border-subtle)',
+                    background: task.completed ? 'rgba(0,0,0,0.25)' : 'transparent',
+                    transition: 'background 0.15s ease'
+                  }}
+                  className="table-row-hover"
+                >
+                  {/* Complete Checkbox */}
                   <div
+                    onClick={() => toggleTask(task.id)}
                     style={{
-                      fontSize: '0.92rem',
-                      fontWeight: 700,
-                      color: item.completed ? 'var(--text-muted)' : 'var(--text-primary)',
-                      textDecoration: item.completed ? 'line-through' : 'none'
+                      width: 20,
+                      height: 20,
+                      borderRadius: 6,
+                      border: task.completed ? 'none' : '2px solid var(--text-muted)',
+                      background: task.completed ? 'var(--accent-emerald)' : 'transparent',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      color: '#ffffff'
                     }}
                   >
-                    {item.title}
+                    {task.completed && <Check size={14} strokeWidth={3} />}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px', fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>
-                      <Clock size={12} style={{ display: 'inline', marginRight: '4px' }} />
-                      {item.time}
+
+                  {/* Time */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    {task.phase === 'DAY' ? <Sun size={13} style={{ color: '#fbbf24' }} /> : <Moon size={13} style={{ color: 'var(--accent-violet)' }} />}
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: task.completed ? 'var(--text-muted)' : 'var(--text-secondary)' }}>
+                      {task.time}
                     </span>
-                    <span
+                  </div>
+
+                  {/* Title and Category */}
+                  <div style={{ minWidth: 0, paddingRight: 16 }}>
+                    <div
                       style={{
-                        padding: '2px 8px',
-                        borderRadius: '4px',
-                        background: 'rgba(59, 130, 246, 0.12)',
-                        color: 'var(--accent-cobalt)',
-                        fontWeight: 600
+                        fontFamily: 'var(--font-heading)',
+                        fontWeight: 700,
+                        fontSize: '0.88rem',
+                        color: task.completed ? 'var(--text-muted)' : 'var(--text-primary)',
+                        textDecoration: task.completed ? 'line-through' : 'none',
+                        lineHeight: 1.4
                       }}
                     >
-                      {item.category}
+                      {task.title}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-mono)',
+                          fontSize: '0.64rem',
+                          padding: '1px 6px',
+                          borderRadius: 4,
+                          background: 'rgba(59,130,246,0.12)',
+                          color: 'var(--accent-cobalt)',
+                          fontWeight: 600
+                        }}
+                      >
+                        {task.category}
+                      </span>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.64rem', color: 'var(--text-muted)' }}>
+                        Impact: {task.impactScore}/100
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Priority Tag */}
+                  <div>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '0.65rem',
+                        fontWeight: 700,
+                        padding: '2px 8px',
+                        borderRadius: 4,
+                        border: `1px solid ${priorityColor}44`,
+                        background: `${priorityColor}15`,
+                        color: priorityColor
+                      }}
+                    >
+                      {task.priority}
                     </span>
                   </div>
-                </div>
 
-                <span
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.68rem',
-                    fontWeight: 700,
-                    padding: '3px 8px',
-                    borderRadius: '4px',
-                    background: item.priority === 'HIGH' ? 'rgba(239, 68, 68, 0.14)' : 'rgba(148, 163, 184, 0.14)',
-                    color: item.priority === 'HIGH' ? '#f87171' : 'var(--text-muted)'
-                  }}
-                >
-                  {item.priority}
-                </span>
-              </motion.div>
-            ))}
+                  {/* Direct Action Button */}
+                  <div style={{ textAlign: 'right' }}>
+                    {task.actionUrl && (
+                      <Link
+                        href={task.actionUrl}
+                        className="btn-secondary"
+                        style={{ padding: '4px 10px', fontSize: '0.72rem', display: 'inline-flex', gap: 4 }}
+                      >
+                        {task.actionLabel}
+                        <ArrowRight size={11} />
+                      </Link>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </main>
